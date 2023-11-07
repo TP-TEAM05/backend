@@ -40,9 +40,13 @@ type Firmware struct {
 }
 
 type Meassurement struct {
-	CarSessionID int
+	CarSessionID uint
+	SensorID     uint
 	latency      int
 	CreatedAt    string `gorm:"type:timestamptz"`
+	Data1        string `gorm:"type:double precision"`
+	Data2        string `gorm:"type:double precision"`
+	Sensor       Sensor
 	CarSession   CarSession
 }
 
@@ -51,7 +55,6 @@ type Sensor struct {
 	ControllerInstaceID uint
 	Name                string     `gorm:"type:varchar(255)"`
 	SensorType          sensorType `gorm:"type:varchar(255)"`
-	SensorData          []SensorData
 	ControllerInstace   ControllerInstace
 }
 
@@ -61,15 +64,6 @@ type Session struct {
 	StartedAt string `gorm:"type:timestamptz"`
 	EndedAt   string `gorm:"type:timestamptz"`
 	Cars      []Car  `gorm:"many2many:car_sessions;"`
-}
-
-type SensorData struct {
-	gorm.Model
-	SensorID       uint
-	MeassurementID uint
-	Data1          string `gorm:"type:double precision"`
-	Data2          string `gorm:"type:double precision"`
-	Sensor         Sensor
 }
 
 type CarSession struct {

@@ -11,7 +11,6 @@ func GetModels() []interface{} {
 		&models.Firmware{},
 		&models.Meassurement{},
 		&models.Sensor{},
-		&models.SensorData{},
 		&models.Session{},
 		&models.CarController{},
 		&models.CarSession{},
