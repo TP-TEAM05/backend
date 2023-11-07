@@ -1,22 +1,21 @@
 package main
 
 import (
-	"net/http"
-	"recofiit/service"
+	"recofiit/routes"
+	"recofiit/services"
+	wsservice "recofiit/services/wsService"
 
 	"github.com/gin-gonic/gin"
 )
 
-func health(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "ReCo web API is running",
-	})
-}
-
 func main() {
 	router := gin.Default()
-	service.Register()
-	router.GET("/health", health)
+	router.SetTrustedProxies([]string{""})
+	services.Register()
+
+	go wsservice.Manager.Start()
+
+	routes.Setup(router)
 
 	router.Run("localhost:8080")
 }
