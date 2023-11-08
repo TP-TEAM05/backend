@@ -18,9 +18,7 @@
       "request": "attach",
       "host": "localhost",
       "port": 2345,
-      "showLog": true,
       "apiVersion": 2,
-      "trace": "verbose"
     }
   ]
 }

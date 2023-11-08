@@ -1,8 +1,7 @@
 package routes
 
 import (
-	"recofiit/controller/rest"
-	"recofiit/controller/ws"
+	"recofiit/controllers/rest"
 
 	"github.com/gin-gonic/gin"
 )
@@ -10,5 +9,5 @@ import (
 func Setup(r *gin.Engine) {
 
 	r.GET("/health", rest.GetHealth)
-	r.GET("/ws", ws.WsHandler)
+	r.GET("/ws", rest.WsHandler)
 }

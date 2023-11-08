@@ -1,4 +1,4 @@
-package ws
+package rest
 
 import (
 	"net/http"
@@ -19,6 +19,7 @@ var upgrader = websocket.Upgrader{
 }
 
 func WsHandler(c *gin.Context) {
+
 	//Upgrade the HTTP protocol to the websocket protocol
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
@@ -26,14 +27,11 @@ func WsHandler(c *gin.Context) {
 		return
 	}
 
-	//Every connection will open a new client, client.id generates through UUID to ensure that each time it is different
-
 	client := &wsservice.Client{ID: uuid.Must(uuid.NewV4(), nil).String(), Socket: conn, Send: make(chan []byte)}
-	//Register a new link
+
 	wsservice.Manager.Register <- client
 
-	//Start the message to collect the news from the web side
+	// Start read and write at selected namespace
 	go client.Read()
-	//Start the corporation to return the message to the web side
 	go client.Write()
 }
