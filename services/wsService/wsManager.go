@@ -2,6 +2,7 @@ package wsservice
 
 import (
 	"encoding/json"
+	"fmt"
 	"recofiit/utils"
 
 	"github.com/gorilla/websocket"
@@ -25,6 +26,8 @@ type ClientManager struct {
 	Register chan *Client
 	//Newly canceled long connection client
 	Unregister chan *Client
+	// WS Router
+	Router WsRouter
 }
 
 type Message struct {
@@ -41,6 +44,7 @@ var Manager = ClientManager{
 	Register:   make(chan *Client),
 	Unregister: make(chan *Client),
 	Clients:    make(map[*Client]bool),
+	Router:     WsRouter{Routes: make(Namespace)},
 }
 
 func (manager *ClientManager) Start() {
@@ -103,9 +107,18 @@ func (c *Client) Read() {
 			_ = c.Socket.Close()
 			break
 		}
-		//If there is no error message, put the information in Broadcast
-		jsonMessage, _ := json.Marshal(&Message{Sender: c.ID, Content: string(message), ServerIP: utils.LocalIp(), SenderIP: c.Socket.RemoteAddr().String()})
-		Manager.Broadcast <- jsonMessage
+
+		messageJSON := WsRequest{}
+		messageJSON.ParseJSON(message)
+
+		handle := Manager.Router.GetHandler(messageJSON.Namespace, messageJSON.Endpoint)
+
+		if handle == nil {
+			fmt.Println("No handler found for this endpoint")
+			return
+		}
+
+		handle()
 	}
 }
 

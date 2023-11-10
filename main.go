@@ -13,9 +13,10 @@ func main() {
 	router.SetTrustedProxies([]string{""})
 	services.Register()
 
-	go wsservice.Manager.Start()
-
 	routes.Setup(router)
+	routes.SetupWs(&wsservice.Manager)
+
+	go wsservice.Manager.Start()
 
 	router.Run("localhost:8080")
 }
