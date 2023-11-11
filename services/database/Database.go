@@ -21,10 +21,6 @@ func GetDB() *gorm.DB {
 	return DB
 }
 
-func AutoMigrate() {
-	DB.AutoMigrate(GetModels()...)
-}
-
 func Init() {
 	DBConnect()
 	AutoMigrate()

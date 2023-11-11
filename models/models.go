@@ -84,8 +84,8 @@ type CarSessionController struct {
 
 type CarController struct {
 	gorm.Model
-	CarID                uint `gorm:"primaryKey"`
-	ControllerInstanceID uint `gorm:"primaryKey"`
+	CarID                uint
+	ControllerInstanceID uint
 }
 
 type ControllerInstace struct {

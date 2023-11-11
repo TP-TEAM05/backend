@@ -5,6 +5,14 @@ go 1.21.3
 require github.com/gin-gonic/gin v1.9.1
 
 require (
+	github.com/golang-migrate/migrate/v4 v4.16.2 // indirect
+	github.com/hashicorp/errwrap v1.1.0 // indirect
+	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/lib/pq v1.10.2 // indirect
+	go.uber.org/atomic v1.7.0 // indirect
+)
+
+require (
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
