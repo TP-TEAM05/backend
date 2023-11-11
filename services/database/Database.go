@@ -9,7 +9,7 @@ var DB *gorm.DB
 var DBerr error
 
 func DBConnect() *gorm.DB {
-	dsn := "host=localhost user=postgres password=postgres dbname=postgres port=5555 sslmode=disable"
+	dsn := "host=timescaledb user=postgres password=postgres dbname=postgres port=5432 sslmode=disable"
 	DB, DBerr = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if DBerr != nil {
 		panic("Failed to connect database")

@@ -19,6 +19,15 @@
       "host": "localhost",
       "port": 2345,
       "apiVersion": 2,
+    },
+    {
+      "name": "Attach to Docker",
+      "type": "go",
+      "mode": "remote",
+      "request": "attach",
+      "host": "localhost",
+      "port": 5345,
+      "apiVersion": 2,
     }
   ]
 }

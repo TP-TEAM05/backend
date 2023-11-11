@@ -18,5 +18,5 @@ func main() {
 
 	go wsservice.Manager.Start()
 
-	router.Run("localhost:8080")
+	router.Run(":8080")
 }
