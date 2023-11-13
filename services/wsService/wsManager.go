@@ -113,12 +113,21 @@ func (c *Client) Read() {
 
 		handle := Manager.Router.GetHandler(messageJSON.Namespace, messageJSON.Endpoint)
 
+		req := &messageJSON
+		res := &WsResponse{}
+
+		res.Namespace = messageJSON.Namespace
+		res.Endpoint = messageJSON.Endpoint
+		res.Error = ""
+
 		if handle == nil {
 			fmt.Println("No handler found for this endpoint")
 			return
 		}
 
-		handle()
+		handle(c, req, res)
+
+		c.Send <- res.ToJSON()
 	}
 }
 

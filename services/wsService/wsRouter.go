@@ -18,7 +18,10 @@ type WsResponse struct {
 	Error     string      `json:"error"`
 }
 
-type Endpoint = map[string]func()
+// Function type with optional parameters
+type Handler func(c *Client, req *WsRequest, res *WsResponse)
+
+type Endpoint = map[string]Handler
 
 type Namespace = map[string]Endpoint
 
@@ -35,7 +38,14 @@ func (m *WsRequest) ParseJSON(message []byte) {
 	}
 }
 
-func (r *WsRouter) Register(namespace string, endpoint string, handler func()) {
+func (m *WsResponse) ToJSON() []byte {
+
+	resJSON, _ := json.Marshal(&m)
+
+	return resJSON
+}
+
+func (r *WsRouter) Register(namespace string, endpoint string, handler Handler) {
 
 	if r.Routes[namespace] == nil {
 		r.Routes[namespace] = make(Endpoint)
@@ -44,7 +54,7 @@ func (r *WsRouter) Register(namespace string, endpoint string, handler func()) {
 	r.Routes[namespace][endpoint] = handler
 }
 
-func (r *WsRouter) GetHandler(namespace string, endpoint string) func() {
+func (r *WsRouter) GetHandler(namespace string, endpoint string) Handler {
 
 	if r.Routes[namespace] == nil {
 		return nil
