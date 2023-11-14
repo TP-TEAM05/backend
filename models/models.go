@@ -21,6 +21,7 @@ type Car struct {
 	gorm.Model
 	Vin      string
 	Name     string
+	Color    string
 	Sessions []Session `gorm:"many2many:car_sessions;"`
 }
 

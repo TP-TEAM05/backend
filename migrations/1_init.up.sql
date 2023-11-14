@@ -44,7 +44,8 @@ CREATE TABLE public.cars (
   updated_at timestamp with time zone,
   deleted_at timestamp with time zone,
   vin text,
-  name text
+  name text,
+  color text
 );
 
 CREATE TABLE public.controller_instaces (
