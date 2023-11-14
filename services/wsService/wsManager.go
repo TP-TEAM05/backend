@@ -108,24 +108,17 @@ func (c *Client) Read() {
 			break
 		}
 
-		messageJSON := WsRequest{}
-		messageJSON.ParseJSON(message)
+		ReqJson := &WsRequest[interface{}]{}
+		ReqJson.Parse(message)
 
-		handle := Manager.Router.GetHandler(messageJSON.Namespace, messageJSON.Endpoint)
+		Handle := Manager.Router.GetHandler(ReqJson.Namespace, ReqJson.Endpoint)
 
-		req := &messageJSON
-		res := &WsResponse{}
-
-		res.Namespace = messageJSON.Namespace
-		res.Endpoint = messageJSON.Endpoint
-		res.Error = ""
-
-		if handle == nil {
+		if Handle == nil {
 			fmt.Println("No handler found for this endpoint")
 			return
 		}
 
-		handle(c, req, res)
+		res := Handle(message)
 
 		c.Send <- res.ToJSON()
 	}

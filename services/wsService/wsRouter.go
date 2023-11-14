@@ -5,23 +5,30 @@ import (
 	"fmt"
 )
 
-type WsRequest struct {
-	Namespace string      `json:"namespace"`
-	Endpoint  string      `json:"endpoint"`
-	Body      interface{} `json:"body"`
+type WsRequest[B any] struct {
+	Namespace string `json:"namespace"`
+	Endpoint  string `json:"endpoint"`
+	Body      B      `json:"-"`
 }
 
-type WsResponse struct {
-	Namespace string      `json:"namespace"`
-	Endpoint  string      `json:"endpoint"`
-	Body      interface{} `json:"body"`
-	Error     string      `json:"error"`
+type WsRequestPrepared[B any] struct {
+	Namespace string `json:"namespace"`
+	Endpoint  string `json:"endpoint"`
+	Body      B      `json:"body"`
+	Message   []byte
+}
+
+type WsResponse[B any] struct {
+	Namespace string `json:"namespace"`
+	Endpoint  string `json:"endpoint"`
+	Body      B      `json:"body"`
+	Error     string `json:"error"`
 }
 
 // Function type with optional parameters
-type Handler func(c *Client, req *WsRequest, res *WsResponse)
+type Handler func(message []byte) WsResponse[interface{}]
 
-type Endpoint = map[string]Handler
+type Endpoint map[string]Handler
 
 type Namespace = map[string]Endpoint
 
@@ -29,16 +36,25 @@ type WsRouter struct {
 	Routes Namespace
 }
 
-func (m *WsRequest) ParseJSON(message []byte) {
+func (m *WsRequest[B]) Parse(message []byte) {
 
 	err := json.Unmarshal([]byte(message), &m)
 
 	if err != nil {
-		fmt.Println("error:", err)
+		fmt.Println("[Error] [WsRequest]:", err)
 	}
 }
 
-func (m *WsResponse) ToJSON() []byte {
+func (r *WsRequestPrepared[B]) Parse(message []byte) {
+
+	err := json.Unmarshal([]byte(message), &r)
+
+	if err != nil {
+		fmt.Println("[Error] [WsRequestPrepared]:", err)
+	}
+}
+
+func (m *WsResponse[B]) ToJSON() []byte {
 
 	resJSON, _ := json.Marshal(&m)
 
@@ -61,17 +77,4 @@ func (r *WsRouter) GetHandler(namespace string, endpoint string) Handler {
 	}
 
 	return r.Routes[namespace][endpoint]
-}
-
-func (r *WsRouter) Error() []byte {
-	res := WsResponse{
-		Namespace: "error",
-		Endpoint:  "error",
-		Body:      nil,
-		Error:     "No handler found for this endpoint",
-	}
-
-	resJSON, _ := json.Marshal(&res)
-
-	return resJSON
 }

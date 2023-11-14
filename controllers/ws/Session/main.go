@@ -1,10 +1,7 @@
 package ws_session_namespace
 
 import (
-	"errors"
 	"fmt"
-	"github.com/stretchr/objx"
-	"gorm.io/gorm"
 	"recofiit/models"
 	"recofiit/services/database"
 	wsservice "recofiit/services/wsService"
@@ -12,35 +9,42 @@ import (
 
 type WsSessionController struct{}
 
-type SessionGetRequestBody struct {
-	id int
-}
-
-func (w WsSessionController) Get(c *wsservice.Client, req *wsservice.WsRequest, res *wsservice.WsResponse) {
-	id := objx.New(req.Body).Get("id").Int()
-	fmt.Println(id)
-	fmt.Println("GET SESSION", id)
-	db := database.GetDB()
-	var session models.Session
-	result := db.First(&session, id)
-
-	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		res.Error = "Not found"
-	} else {
-		res.Body = session
+func (w WsSessionController) Get(req []byte) wsservice.WsResponse[interface{}] {
+	type Body struct {
+		ID string `json:"id"`
 	}
+
+	var Req wsservice.WsRequestPrepared[Body]
+	Req.Parse(req)
+
+	return wsservice.WsResponse[interface{}]{}
 }
-func (w WsSessionController) List(c *wsservice.Client, req *wsservice.WsRequest, res *wsservice.WsResponse) {
+func (w WsSessionController) List(req []byte) wsservice.WsResponse[interface{}] {
 	fmt.Println("LIST SESSION")
 	db := database.GetDB()
 	var sessions []models.Session
 	db.Find(&sessions)
+	return wsservice.WsResponse[interface{}]{}
+}
+func (w WsSessionController) Create(req []byte) wsservice.WsResponse[interface{}] {
+	type Body struct {
+		Cars []string `json:"cars"`
+		Name string   `json:"name"`
+	}
 
-	res.Body = sessions
+	var Req wsservice.WsRequestPrepared[Body]
+
+	Req.Parse(req)
+
+	fmt.Println("CREATE SESSION", Req.Body.Cars)
+
+	fmt.Println("CREATE SESSION")
+	return wsservice.WsResponse[interface{}]{}
+
 }
-func (w WsSessionController) Create(c *wsservice.Client, req *wsservice.WsRequest, res *wsservice.WsResponse) {
+func (w WsSessionController) Update(req []byte) wsservice.WsResponse[interface{}] {
+	return wsservice.WsResponse[interface{}]{}
 }
-func (w WsSessionController) Update(c *wsservice.Client, req *wsservice.WsRequest, res *wsservice.WsResponse) {
-}
-func (w WsSessionController) Delete(c *wsservice.Client, req *wsservice.WsRequest, res *wsservice.WsResponse) {
+func (w WsSessionController) Delete(req []byte) wsservice.WsResponse[interface{}] {
+	return wsservice.WsResponse[interface{}]{}
 }
