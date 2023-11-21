@@ -61,10 +61,10 @@ type Sensor struct {
 
 type Session struct {
 	gorm.Model
-	Name      string `gorm:"type:varchar(255)"`
-	StartedAt string `gorm:"type:timestamptz"`
-	EndedAt   string `gorm:"type:timestamptz"`
-	Cars      []Car  `gorm:"many2many:car_sessions;"`
+	Name      string  `gorm:"type:varchar(255)"`
+	StartedAt *string `gorm:"type:timestamptz"`
+	EndedAt   *string `gorm:"type:timestamptz"`
+	Cars      []Car   `gorm:"many2many:car_sessions;"`
 }
 
 type CarSession struct {

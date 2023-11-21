@@ -5,28 +5,44 @@ import (
 	"recofiit/models"
 	"recofiit/services/database"
 	wsservice "recofiit/services/wsService"
+	"strconv"
 )
 
 type WsSessionController struct{}
 
 func (w WsSessionController) Get(req []byte) wsservice.WsResponse[interface{}] {
+	fmt.Println("GET SESSION")
 	type Body struct {
-		ID string `json:"id"`
+		ID uint `json:"id"`
 	}
 
 	var Req wsservice.WsRequestPrepared[Body]
 	Req.Parse(req)
 
-	return wsservice.WsResponse[interface{}]{}
+	db := database.GetDB()
+	var session models.Session
+	session.ID = Req.Body.ID
+	db.Find(&session)
+
+	return wsservice.WsResponse[interface{}]{
+		Namespace: "session",
+		Endpoint:  "get",
+		Body:      session,
+	}
 }
 func (w WsSessionController) List(req []byte) wsservice.WsResponse[interface{}] {
 	fmt.Println("LIST SESSION")
 	db := database.GetDB()
 	var sessions []models.Session
-	db.Find(&sessions)
-	return wsservice.WsResponse[interface{}]{}
+	db.Preload("Cars").Find(&sessions)
+	return wsservice.WsResponse[interface{}]{
+		Namespace: "session",
+		Endpoint:  "list",
+		Body:      sessions,
+	}
 }
 func (w WsSessionController) Create(req []byte) wsservice.WsResponse[interface{}] {
+	fmt.Println("CREATE SESSION")
 	type Body struct {
 		Cars []string `json:"cars"`
 		Name string   `json:"name"`
@@ -36,10 +52,25 @@ func (w WsSessionController) Create(req []byte) wsservice.WsResponse[interface{}
 
 	Req.Parse(req)
 
-	fmt.Println("CREATE SESSION", Req.Body.Cars)
+	var cars []models.Car
 
-	fmt.Println("CREATE SESSION")
-	return wsservice.WsResponse[interface{}]{}
+	db := database.GetDB()
+	db.Where("vin IN ?", Req.Body.Cars).Find(&cars)
+
+	var session models.Session
+
+	session.Name = Req.Body.Name
+	session.Cars = cars
+
+	db.Create(&session)
+
+	fmt.Println("CREATED SESSION " + strconv.Itoa(int(session.ID)))
+
+	return wsservice.WsResponse[interface{}]{
+		Namespace: "session",
+		Endpoint:  "create",
+		Body:      session,
+	}
 
 }
 func (w WsSessionController) Update(req []byte) wsservice.WsResponse[interface{}] {
