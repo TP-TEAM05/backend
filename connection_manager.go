@@ -42,7 +42,7 @@ func sendKeepAlives(connection *IntegrationModuleConnection, interval float32) {
 }
 
 // Subscribes to the Integration Module and checks that it is live, subscriptionContent can be "vehicles" or "notifications"
-func maintainSubscription(connection *IntegrationModuleConnection, subscriptionContent string, subscriptionInterval float32, checkInterval float32) {
+func maintainSubscription(connection *IntegrationModuleConnection, subscriptionContent string, subscriptionTopic string, subscriptionInterval float32, checkInterval float32) {
 	if connection == nil {
 		panic("Connection cannot be nil")
 	}
@@ -54,6 +54,7 @@ func maintainSubscription(connection *IntegrationModuleConnection, subscriptionC
 			Type: "subscribe",
 		},
 		Content:  subscriptionContent,
+		Topic:    subscriptionTopic,
 		Interval: subscriptionInterval,
 	}
 

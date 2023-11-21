@@ -30,7 +30,7 @@ func main() {
 	go sendKeepAlives(connection, 10)
 
 	// Handle vehicle subscriptions
-	go maintainSubscription(connection, "vehicles", 5, 10)
+	go maintainSubscription(connection, "periodic-updates", "vehicles", 5, 10)
 
 	// --------- Subscribe to Integration Module ---------------
 
