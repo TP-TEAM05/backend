@@ -1,4 +1,4 @@
-package main
+package communication
 
 import (
 	"fmt"
@@ -58,6 +58,9 @@ func maintainSubscription(connection *IntegrationModuleConnection, subscriptionC
 		Interval: subscriptionInterval,
 	}
 
+	// TOTO POJDE DO SAMOSTATNEJ FUNKCIE, PARAMETER BUDE IDATAGRAM -- Z TOHO BUDU 2 FUNKCIE POTOM, JEDNA NA LIVE UPDATES
+	// A JEDNA NA PERIODIC UPDATES
+	// ZMENY POTOM PREKOPIROVAT AJ DO OSTATNYCH MODULOV
 	for {
 		// Subscribe
 		acknowledged := connection.WriteAcknowledgedDatagram(datagram, 3, true)
