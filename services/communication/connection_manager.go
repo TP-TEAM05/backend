@@ -41,7 +41,6 @@ func sendKeepAlives(connection *IntegrationModuleConnection, interval float32) {
 	}
 }
 
-// Subscribes to the Integration Module and checks that it is live, subscriptionContent can be "vehicles" or "notifications"
 func maintainSubscription(connection *IntegrationModuleConnection, subscriptionContent string, subscriptionTopic string, subscriptionInterval float32, checkInterval float32) {
 	if connection == nil {
 		panic("Connection cannot be nil")
@@ -58,9 +57,6 @@ func maintainSubscription(connection *IntegrationModuleConnection, subscriptionC
 		Interval: subscriptionInterval,
 	}
 
-	// TOTO POJDE DO SAMOSTATNEJ FUNKCIE, PARAMETER BUDE IDATAGRAM -- Z TOHO BUDU 2 FUNKCIE POTOM, JEDNA NA LIVE UPDATES
-	// A JEDNA NA PERIODIC UPDATES
-	// ZMENY POTOM PREKOPIROVAT AJ DO OSTATNYCH MODULOV
 	for {
 		// Subscribe
 		acknowledged := connection.WriteAcknowledgedDatagram(datagram, 3, true)
