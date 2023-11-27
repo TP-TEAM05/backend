@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"fmt"
 	"net/http"
 	wsservice "recofiit/services/wsService"
 
@@ -27,9 +28,15 @@ func WsHandler(c *gin.Context) {
 		return
 	}
 
+	manager := wsservice.Manager
+
+	clients := manager.Clients
+
+	fmt.Println("Clients:", clients)
+
 	client := &wsservice.Client{ID: uuid.Must(uuid.NewV4(), nil).String(), Socket: conn, Send: make(chan []byte)}
 
-	wsservice.Manager.Register <- client
+	manager.Register <- client
 
 	// Start read and write at selected namespace
 	go client.Read()
