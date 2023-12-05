@@ -1,4 +1,4 @@
-package communication
+package models
 
 const (
 	TimestampFormat = "2006-01-02T15:04:05.999Z"
@@ -167,6 +167,11 @@ type CrossroadNotifyVehicleDatagram struct {
 type UpdateVehiclesDatagram struct {
 	BaseDatagram
 	Vehicles []UpdateVehiclesVehicle `json:"vehicles"`
+}
+
+type UpdatePositionVehicleDatagram struct {
+	BaseDatagram
+	Vehicle UpdateVehiclesVehicle `json:"vehicle"`
 }
 
 type ConnectVehicleDatagram struct {

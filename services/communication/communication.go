@@ -27,7 +27,7 @@ func subscribe() {
 	go sendKeepAlives(connection, 10)
 
 	// Handle vehicle subscriptions
-	go maintainSubscription(connection, "live-updates", "vehicles", 5, 10)
+	go maintainSubscription(connection, "live-updates", "vehicles", 1, 10)
 }
 
 func Init() {

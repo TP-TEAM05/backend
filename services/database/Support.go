@@ -13,7 +13,7 @@ func GetModels() []interface{} {
 		&models.Car{},
 		&models.Controller{},
 		&models.Firmware{},
-		&models.Meassurement{},
+		&models.Measurement{},
 		&models.Sensor{},
 		&models.Session{},
 		&models.CarController{},

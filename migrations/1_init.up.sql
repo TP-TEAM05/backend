@@ -95,7 +95,7 @@ CREATE TABLE public.sessions (
   ended_at timestamp with time zone
 );
 
-CREATE TABLE public.meassurements (
+CREATE TABLE public.measurements (
   car_session_id bigint,
   sensor_id bigint,
   created_at timestamp with time zone,
@@ -105,7 +105,7 @@ CREATE TABLE public.meassurements (
 
 -- CREATE HYPER_TABLES
 SELECT
-  create_hypertable('meassurements', 'created_at');
+  create_hypertable('measurements', 'created_at');
 
 -- ADD CONSTRAINTS
 ALTER TABLE
@@ -154,9 +154,9 @@ ADD
   CONSTRAINT sessions_pkey PRIMARY KEY (id);
 
 ALTER TABLE
-  public.meassurements
+  public.measurements
 ADD
-  CONSTRAINT fk_car_sessions_meassurements FOREIGN KEY (car_session_id) REFERENCES public.car_sessions(id);
+  CONSTRAINT fk_car_sessions_measurements FOREIGN KEY (car_session_id) REFERENCES public.car_sessions(id);
 
 ALTER TABLE
   ONLY public.car_sessions
@@ -174,9 +174,9 @@ ADD
   CONSTRAINT fk_firmwares_controller_instaces FOREIGN KEY (firmware_id) REFERENCES public.firmwares(id);
 
 ALTER TABLE
-  public.meassurements
+  public.measurements
 ADD
-  CONSTRAINT fk_meassurements_sensor FOREIGN KEY (sensor_id) REFERENCES public.sensors(id);
+  CONSTRAINT fk_measurements_sensor FOREIGN KEY (sensor_id) REFERENCES public.sensors(id);
 
 ALTER TABLE
   ONLY public.sensors

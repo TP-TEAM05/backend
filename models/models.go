@@ -1,20 +1,22 @@
 package models
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 )
 
-type sensorType string
+type SensorType string
 
 const (
-	FRONT_LIDAR            sensorType = "FRONT_LIDAR"
-	FRONT_ULTRASONIC       sensorType = "FRONT_ULTRASONIC"
-	REAR_ULTASONIC         sensorType = "REAR_ULTASONIC"
-	WHEEL_SPEED            sensorType = "WHEEL_SPEED"
-	GPS_LOCATION           sensorType = "GPS_LOCATION"
-	GPS_SPEED              sensorType = "GPS_SPEED"
-	GPS_DIRECTION          sensorType = "GPS_DIRECTION"
-	MAGNETOMETER_DIRECTION sensorType = "MAGNETOMETER_DIRECTION"
+	FRONT_LIDAR            SensorType = "FRONT_LIDAR"
+	FRONT_ULTRASONIC       SensorType = "FRONT_ULTRASONIC"
+	REAR_ULTASONIC         SensorType = "REAR_ULTASONIC"
+	WHEEL_SPEED            SensorType = "WHEEL_SPEED"
+	GPS_LOCATION           SensorType = "GPS_LOCATION"
+	GPS_SPEED              SensorType = "GPS_SPEED"
+	GPS_DIRECTION          SensorType = "GPS_DIRECTION"
+	MAGNETOMETER_DIRECTION SensorType = "MAGNETOMETER_DIRECTION"
 )
 
 type Car struct {
@@ -39,7 +41,7 @@ type Firmware struct {
 	ControllerInstaces []ControllerInstace
 }
 
-type Meassurement struct {
+type Measurement struct {
 	CarSessionID uint
 	SensorID     uint
 	latency      int
@@ -54,16 +56,16 @@ type Sensor struct {
 	gorm.Model
 	ControllerInstaceID uint
 	Name                string     `gorm:"type:varchar(255)"`
-	SensorType          sensorType `gorm:"type:varchar(255)"`
+	SensorType          SensorType `gorm:"type:varchar(255)"`
 	ControllerInstace   ControllerInstace
 }
 
 type Session struct {
 	gorm.Model
-	Name      string `gorm:"type:varchar(255)"`
-	StartedAt string `gorm:"type:timestamptz"`
-	EndedAt   string `gorm:"type:timestamptz"`
-	Cars      []Car  `gorm:"many2many:car_sessions;"`
+	Name      string     `gorm:"type:varchar(255)"`
+	StartedAt *time.Time `gorm:"type:timestamptz"`
+	EndedAt   *time.Time `gorm:"type:timestamptz"`
+	Cars      []Car      `gorm:"many2many:car_sessions;"`
 }
 
 type CarSession struct {
@@ -72,7 +74,7 @@ type CarSession struct {
 	SessionID          uint
 	IsControlledByUser bool
 	ControllerInstaces []ControllerInstace `gorm:"many2many:car_session_controllers;"`
-	Meassurements      []Meassurement
+	Meassurements      []Measurement
 	Session            Session
 }
 
