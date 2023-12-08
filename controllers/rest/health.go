@@ -1,15 +1,19 @@
 package rest
 
 import (
-	"fmt"
 	"net/http"
+	database "recofiit/services/database"
+	redis "recofiit/services/redis"
 
 	"github.com/gin-gonic/gin"
 )
 
 func GetHealth(c *gin.Context) {
-	fmt.Println("GetHealth")
+	redisStatus := redis.HealthCheck()
+	dbStatus := database.HealthCheck()
 	c.JSON(http.StatusOK, gin.H{
-		"message": "ReCo web API is running",
+		"API":   true,
+		"DB":    dbStatus,
+		"Redis": redisStatus,
 	})
 }

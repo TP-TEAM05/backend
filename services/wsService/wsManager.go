@@ -28,6 +28,10 @@ type ClientManager struct {
 	Unregister chan *Client
 	// WS Router
 	Router WsRouter
+
+	ActiveConnections int
+
+	TotalConnections int
 }
 
 type Message struct {
@@ -40,11 +44,13 @@ type Message struct {
 }
 
 var Manager = ClientManager{
-	Broadcast:  make(chan []byte),
-	Register:   make(chan *Client),
-	Unregister: make(chan *Client),
-	Clients:    make(map[*Client]bool),
-	Router:     WsRouter{Routes: make(Namespace)},
+	Broadcast:         make(chan []byte),
+	Register:          make(chan *Client),
+	Unregister:        make(chan *Client),
+	Clients:           make(map[*Client]bool),
+	Router:            WsRouter{Routes: make(Namespace)},
+	ActiveConnections: 0,
+	TotalConnections:  0,
 }
 
 func (manager *ClientManager) Start() {
@@ -54,18 +60,29 @@ func (manager *ClientManager) Start() {
 		case conn := <-manager.Register:
 			//Set the client connection to true
 			manager.Clients[conn] = true
+			manager.ActiveConnections++
+			manager.TotalConnections++
 			//Format the message of returning to the successful connection JSON
 			jsonMessage, _ := json.Marshal(&Message{Content: "/A new socket has connected. ", ServerIP: utils.LocalIp(), SenderIP: conn.Socket.RemoteAddr().String()})
 			//Call the client's send method and send messages
 			manager.Send(jsonMessage, conn)
 			//If the connection is disconnected
 		case conn := <-manager.Unregister:
-			//Determine the state of the connection, if it is true, turn off Send and delete the value of connecting client
+			manager.ActiveConnections--
 			if _, ok := manager.Clients[conn]; ok {
 				close(conn.Send)
 				delete(manager.Clients, conn)
 				jsonMessage, _ := json.Marshal(&Message{Content: "/A socket has disconnected. ", ServerIP: utils.LocalIp(), SenderIP: conn.Socket.RemoteAddr().String()})
 				manager.Send(jsonMessage, conn)
+			}
+			if (manager.TotalConnections - manager.ActiveConnections) > 10 {
+				newClientsMap := make(map[*Client]bool)
+				for conn := range manager.Clients {
+					newClientsMap[conn] = true
+				}
+				manager.Clients = newClientsMap
+				manager.TotalConnections = manager.ActiveConnections
+
 			}
 			//broadcast
 		case message := <-manager.Broadcast:
@@ -126,6 +143,7 @@ func (c *Client) Read() {
 
 func (c *Client) Write() {
 	defer func() {
+		Manager.Unregister <- c
 		_ = c.Socket.Close()
 	}()
 

@@ -25,3 +25,10 @@ func Init() {
 	DBConnect()
 	AutoMigrate()
 }
+
+func HealthCheck() bool {
+	if DB == nil {
+		return false
+	}
+	return true
+}
