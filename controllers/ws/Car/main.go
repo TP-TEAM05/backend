@@ -5,13 +5,30 @@ import (
 	"recofiit/models"
 	"recofiit/services/database"
 	wsservice "recofiit/services/wsService"
+	"strconv"
 )
 
 type WsCarController struct{}
 
 func (w WsCarController) Get(req []byte) wsservice.WsResponse[interface{}] {
 	fmt.Println("GET CAR")
-	return wsservice.WsResponse[interface{}]{}
+	type Body struct {
+		ID uint `json:"id"`
+	}
+
+	var Req wsservice.WsRequestPrepared[Body]
+	Req.Parse(req)
+
+	db := database.GetDB()
+	var car models.Car
+	car.ID = Req.Body.ID
+	db.Find(&car)
+
+	return wsservice.WsResponse[interface{}]{
+		Namespace: "car",
+		Endpoint:  "get",
+		Body:      car,
+	}
 }
 func (w WsCarController) List(req []byte) wsservice.WsResponse[interface{}] {
 	fmt.Println("LIST CAR")
@@ -27,13 +44,84 @@ func (w WsCarController) List(req []byte) wsservice.WsResponse[interface{}] {
 }
 func (w WsCarController) Create(req []byte) wsservice.WsResponse[interface{}] {
 	fmt.Println("CREATE CAR")
-	return wsservice.WsResponse[interface{}]{}
+	type Body struct {
+		Vin   string `json:"vin"`
+		Name  string `json:"name"`
+		Color string `json:"color"`
+	}
+	var Req wsservice.WsRequestPrepared[Body]
+
+	Req.Parse(req)
+
+	db := database.GetDB()
+
+	var car models.Car
+	car.Vin = Req.Body.Vin
+	car.Name = Req.Body.Name
+	car.Color = Req.Body.Color
+
+	db.Create(&car)
+
+	fmt.Println("CREATED CAR " + strconv.Itoa(int(car.ID)))
+
+	return wsservice.WsResponse[interface{}]{
+		Namespace: "car",
+		Endpoint:  "create",
+		Body:      car,
+	}
 }
 func (w WsCarController) Update(req []byte) wsservice.WsResponse[interface{}] {
 	fmt.Println("UPDATE CAR")
-	return wsservice.WsResponse[interface{}]{}
+	type Body struct {
+		ID    uint   `json:"id"`
+		Vin   string `json:"vin"`
+		Name  string `json:"name"`
+		Color string `json:"color"`
+	}
+	var Req wsservice.WsRequestPrepared[Body]
+
+	Req.Parse(req)
+
+	db := database.GetDB()
+
+	var car models.Car
+	db.Find(&car, Req.Body.ID)
+
+	car.Vin = Req.Body.Vin
+	car.Name = Req.Body.Name
+	car.Color = Req.Body.Color
+
+	db.Save(&car)
+
+	fmt.Println("UPDATED CAR " + strconv.Itoa(int(car.ID)))
+
+	return wsservice.WsResponse[interface{}]{
+		Namespace: "car",
+		Endpoint:  "update",
+		Body:      car,
+	}
 }
 func (w WsCarController) Delete(req []byte) wsservice.WsResponse[interface{}] {
 	fmt.Println("DELETE CAR")
-	return wsservice.WsResponse[interface{}]{}
+	type Body struct {
+		ID uint `json:"id"`
+	}
+	var Req wsservice.WsRequestPrepared[Body]
+
+	Req.Parse(req)
+
+	db := database.GetDB()
+
+	var car models.Car
+	db.Find(&car, Req.Body.ID)
+
+	db.Delete(&car)
+
+	fmt.Println("DELETED CAR " + strconv.Itoa(int(car.ID)))
+
+	return wsservice.WsResponse[interface{}]{
+		Namespace: "car",
+		Endpoint:  "delete",
+		Body:      car,
+	}
 }

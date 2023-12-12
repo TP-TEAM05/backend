@@ -74,8 +74,59 @@ func (w WsSessionController) Create(req []byte) wsservice.WsResponse[interface{}
 
 }
 func (w WsSessionController) Update(req []byte) wsservice.WsResponse[interface{}] {
-	return wsservice.WsResponse[interface{}]{}
+	fmt.Println("UPDATE SESSION")
+	type Body struct {
+		ID   uint     `json:"id"`
+		Cars []string `json:"cars"`
+		Name string   `json:"name"`
+	}
+
+	var Req wsservice.WsRequestPrepared[Body]
+
+	Req.Parse(req)
+
+	var cars []models.Car
+
+	db := database.GetDB()
+	db.Where("vin IN ?", Req.Body.Cars).Find(&cars)
+
+	var session models.Session
+	db.Find(&session, Req.Body.ID)
+
+	session.Name = Req.Body.Name
+	session.Cars = cars
+
+	db.Save(&session)
+
+	fmt.Println("UPDATED SESSION " + strconv.Itoa(int(session.ID)))
+
+	return wsservice.WsResponse[interface{}]{
+		Namespace: "session",
+		Endpoint:  "update",
+		Body:      session,
+	}
 }
 func (w WsSessionController) Delete(req []byte) wsservice.WsResponse[interface{}] {
-	return wsservice.WsResponse[interface{}]{}
+	fmt.Println("DELETE SESSION")
+	type Body struct {
+		ID uint `json:"id"`
+	}
+	var Req wsservice.WsRequestPrepared[Body]
+
+	Req.Parse(req)
+
+	db := database.GetDB()
+
+	var session models.Session
+	db.Find(&session, Req.Body.ID)
+
+	db.Delete(&session)
+
+	fmt.Println("DELETED SESSION " + strconv.Itoa(int(session.ID)))
+
+	return wsservice.WsResponse[interface{}]{
+		Namespace: "session",
+		Endpoint:  "delete",
+		Body:      session,
+	}
 }
