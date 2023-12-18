@@ -64,6 +64,18 @@ func (w WsSessionController) Create(req []byte) wsservice.WsResponse[interface{}
 
 	db.Create(&session)
 
+	var cis []models.ControllerInstace
+	db.Where("car_id IN ?", Req.Body.Cars).Find(&cis)
+
+	var cscs []models.CarSessionController
+	for _, ci := range cis {
+		var csc models.CarSessionController
+		csc.CarSessionID = session.ID
+		csc.ControllerInstanceID = ci.ID
+		cscs = append(cscs, csc)
+	}
+	db.Create(&cscs)
+
 	fmt.Println("CREATED SESSION " + strconv.Itoa(int(session.ID)))
 
 	return wsservice.WsResponse[interface{}]{
@@ -76,9 +88,11 @@ func (w WsSessionController) Create(req []byte) wsservice.WsResponse[interface{}
 func (w WsSessionController) Update(req []byte) wsservice.WsResponse[interface{}] {
 	fmt.Println("UPDATE SESSION")
 	type Body struct {
-		ID   uint     `json:"id"`
-		Cars []string `json:"cars"`
-		Name string   `json:"name"`
+		ID        uint     `json:"id"`
+		Cars      []string `json:"cars"`
+		Name      string   `json:"name"`
+		StartedAt *string  `json:"started_at"`
+		EndedAt   *string  `json:"ended_at"`
 	}
 
 	var Req wsservice.WsRequestPrepared[Body]
@@ -95,6 +109,8 @@ func (w WsSessionController) Update(req []byte) wsservice.WsResponse[interface{}
 
 	session.Name = Req.Body.Name
 	session.Cars = cars
+	session.StartedAt = Req.Body.StartedAt
+	session.EndedAt = Req.Body.EndedAt
 
 	db.Save(&session)
 

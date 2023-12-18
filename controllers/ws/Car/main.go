@@ -13,7 +13,7 @@ type WsCarController struct{}
 func (w WsCarController) Get(req []byte) wsservice.WsResponse[interface{}] {
 	fmt.Println("GET CAR")
 	type Body struct {
-		ID uint `json:"id"`
+		Vin string `json:"vin"`
 	}
 
 	var Req wsservice.WsRequestPrepared[Body]
@@ -21,7 +21,7 @@ func (w WsCarController) Get(req []byte) wsservice.WsResponse[interface{}] {
 
 	db := database.GetDB()
 	var car models.Car
-	car.ID = Req.Body.ID
+	car.Vin = Req.Body.Vin
 	db.Find(&car)
 
 	return wsservice.WsResponse[interface{}]{
@@ -73,7 +73,6 @@ func (w WsCarController) Create(req []byte) wsservice.WsResponse[interface{}] {
 func (w WsCarController) Update(req []byte) wsservice.WsResponse[interface{}] {
 	fmt.Println("UPDATE CAR")
 	type Body struct {
-		ID    uint   `json:"id"`
 		Vin   string `json:"vin"`
 		Name  string `json:"name"`
 		Color string `json:"color"`
@@ -85,7 +84,8 @@ func (w WsCarController) Update(req []byte) wsservice.WsResponse[interface{}] {
 	db := database.GetDB()
 
 	var car models.Car
-	db.Find(&car, Req.Body.ID)
+	car.Vin = Req.Body.Vin
+	db.Find(&car)
 
 	car.Vin = Req.Body.Vin
 	car.Name = Req.Body.Name
@@ -104,7 +104,7 @@ func (w WsCarController) Update(req []byte) wsservice.WsResponse[interface{}] {
 func (w WsCarController) Delete(req []byte) wsservice.WsResponse[interface{}] {
 	fmt.Println("DELETE CAR")
 	type Body struct {
-		ID uint `json:"id"`
+		Vin string `json:"vin"`
 	}
 	var Req wsservice.WsRequestPrepared[Body]
 
@@ -113,7 +113,8 @@ func (w WsCarController) Delete(req []byte) wsservice.WsResponse[interface{}] {
 	db := database.GetDB()
 
 	var car models.Car
-	db.Find(&car, Req.Body.ID)
+	car.Vin = Req.Body.Vin
+	db.Find(&car)
 
 	db.Delete(&car)
 

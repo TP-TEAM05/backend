@@ -32,9 +32,23 @@ func (w WsControllerController) Get(req []byte) wsservice.WsResponse[interface{}
 }
 func (w WsControllerController) List(req []byte) wsservice.WsResponse[interface{}] {
 	fmt.Println("LIST CONTROLLER")
+	type Body struct {
+		CarVin *string `json:"vin"`
+	}
+
+	var Req wsservice.WsRequestPrepared[Body]
+	Req.Parse(req)
+
 	db := database.GetDB()
 	var ctrls []models.Controller
-	db.Find(&ctrls)
+	if Req.Body.CarVin == nil {
+		db.Find(&ctrls)
+	} else {
+		var cars []models.Car
+		db.Where("vin = ?", Req.Body.CarVin).Find(&cars)
+
+		db.Where("car_id = ?", cars[0].ID).Find(&ctrls)
+	}
 
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "controller",
