@@ -12,25 +12,43 @@ func NewCarController() *CarController {
 	return &CarController{}
 }
 
-// CreateSessionAndCarSession creates a new session and car session, returning the car session ID
 func (c *CarController) CreateSessionAndCarSession(carID uint, sessionName string) (uint, error) {
-	// Create new session
+	var session models.Session
+	var carSession models.CarSession
+
+	if err := database.GetDB().Where("car_id = ?", carID).First(&carSession).Error; err != nil {
+		session, err = c.CreateSession(carID, "Test session")
+		if err != nil {
+			return 0, err
+		}
+		carSession, err = c.CreateCarSession(carID, session.ID)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return carSession.ID, nil
+}
+
+func (c *CarController) CreateCarSession(carID uint, sessionId uint) (models.CarSession, error) {
+	carSession := models.CarSession{CarID: carID, SessionID: sessionId}
+	var err = database.GetDB().Create(&carSession).Error
+	if err != nil {
+		return carSession, err
+	}
+
+	return carSession, nil
+}
+
+func (c *CarController) CreateSession(carID uint, sessionName string) (models.Session, error) {
 	session := models.Session{
 		Name:      sessionName,
 		StartedAt: &time.Time{},
-		EndedAt:   nil, // Set to nil for NULL in SQL
+		EndedAt:   nil,
 	}
 	err := database.GetDB().Create(&session).Error
 	if err != nil {
-		return 0, err
+		return session, err
 	}
 
-	// Create new car session
-	carSession := models.CarSession{CarID: carID, SessionID: session.ID}
-	err = database.GetDB().Create(&carSession).Error
-	if err != nil {
-		return 0, err
-	}
-
-	return carSession.ID, nil
+	return session, nil
 }

@@ -19,7 +19,7 @@ func GetModels() []interface{} {
 		&models.CarController{},
 		&models.CarSession{},
 		&models.CarSessionController{},
-		&models.ControllerInstace{},
+		&models.ControllerInstance{},
 	}
 }
 

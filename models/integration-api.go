@@ -94,7 +94,7 @@ type AreaDatagram struct {
 
 type NotifyDatagram struct {
 	BaseDatagram
-	VehicleId   int    `json:"vehicleId"`
+	VehicleVin  string `json:"vehicleVin"`
 	Level       string `json:"level"`
 	ContentType string `json:"contentType"`
 }
@@ -166,12 +166,12 @@ type CrossroadNotifyVehicleDatagram struct {
 }
 type UpdateVehiclesDatagram struct {
 	BaseDatagram
-	Vehicles []UpdateVehiclesVehicle `json:"vehicles"`
+	Vehicles []UpdateVehicleVehicle `json:"vehicles"`
 }
 
 type UpdatePositionVehicleDatagram struct {
 	BaseDatagram
-	Vehicle UpdateVehiclesVehicle `json:"vehicle"`
+	Vehicle UpdateVehicleVehicle `json:"vehicle"`
 }
 
 type ConnectVehicleDatagram struct {
@@ -189,24 +189,35 @@ type UpdateVehicleDatagram struct {
 	Vehicle UpdateVehicleVehicle `json:"vehicle"`
 }
 
+type Location struct {
+	Latitude  float32 `json:"latitude"`
+	Longitude float32 `json:"longitude"`
+}
+
 type UpdateVehiclesVehicle struct {
-	Timestamp    string       `json:"timestamp"`
-	Id           int          `json:"id"`
-	Type         string       `json:"type"`
-	Speed        float32      `json:"speed"`
-	Acceleration float32      `json:"acceleration"`
-	Heading      float32      `json:"heading"`
-	Position     PositionJSON `json:"position"`
-	LaneId       string       `json:"laneId"`
+	Timestamp             string   `json:"timestamp"`
+	Id                    int      `json:"id"`
+	Type                  string   `json:"type"`
+	FrontLidar            float32  `json:"front_lidar_distance"`
+	FrontUltrasonic       float32  `json:"front_ultrasonic_distance"`
+	RearUltrasonic        float32  `json:"rear_ultrasonic_distance"`
+	WheelSpeed            float32  `json:"wheel_speed"`
+	GPSLocation           Location `json:"gps_location"`
+	GPSSpeed              float32  `json:"gps_speed`
+	GPSDirection          float32  `json:"gps_direction"`
+	MagnetometerDirection float32  `json:"magnetometer_direction"`
 }
 
 type UpdateVehicleVehicle struct {
-	Vin          string       `json:"vin"`
-	Speed        float32      `json:"speed"`
-	Acceleration float32      `json:"acceleration"`
-	Heading      float32      `json:"heading"`
-	Position     PositionJSON `json:"position"`
-	LaneId       string       `json:"laneId"`
+	Vin                   string   `json:"vin"`
+	FrontLidar            float32  `json:"front_lidar_distance"`
+	FrontUltrasonic       float32  `json:"front_ultrasonic_distance"`
+	RearUltrasonic        float32  `json:"rear_ultrasonic_distance"`
+	WheelSpeed            float32  `json:"wheel_speed"`
+	GPSLocation           Location `json:"gps_location"`
+	GPSSpeed              float32  `json:"gps_speed`
+	GPSDirection          float32  `json:"gps_direction"`
+	MagnetometerDirection float32  `json:"magnetometer_direction"`
 }
 
 type UpdateNotificationsDatagram struct {
@@ -232,14 +243,14 @@ type GenericNotificationContent struct {
 }
 
 type HeadCollisionNotificationContent struct {
-	TargetVehicleId      int     `json:"targetVehicleId"`
+	TargetVehicleVin     string  `json:"targetVehicleVin"`
 	TimeToCollision      float32 `json:"timeToCollision"`
 	MaxSpeedExceededBy   float32 `json:"maxSpeedExceededBy"`
 	BreakingDistanceDiff float32 `json:"breakingDistanceDiff"`
 }
 
 type ChainCollisionNotificationContent struct {
-	TargetVehicleId     int     `json:"targetVehicleId"`
+	TargetVehicleVin    string  `json:"targetVehicleVin"`
 	CurrentDistance     float32 `json:"currentDistance"`
 	RecommendedDistance float32 `json:"recommendedDistance"`
 }

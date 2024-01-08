@@ -110,8 +110,8 @@ func simulateNotifications(connection *IntegrationModuleConnection, notification
 				vehicleB := vehicles[j]
 
 				_, km := geodist.HaversineDistance(
-					geodist.Coord{Lat: float64(vehicleA.Position.Lat), Lon: float64(vehicleA.Position.Lon)},
-					geodist.Coord{Lat: float64(vehicleB.Position.Lat), Lon: float64(vehicleB.Position.Lon)})
+					geodist.Coord{Lat: float64(vehicleA.GPSLocation.Latitude), Lon: float64(vehicleA.GPSLocation.Longitude)},
+					geodist.Coord{Lat: float64(vehicleB.GPSLocation.Latitude), Lon: float64(vehicleB.GPSLocation.Longitude)})
 
 				metersDistance := km * 1000.0
 
@@ -133,12 +133,12 @@ func simulateNotifications(connection *IntegrationModuleConnection, notification
 								BaseDatagram: models.BaseDatagram{
 									Type: "notify",
 								},
-								VehicleId:   vehicleA.Id,
+								VehicleVin:  vehicleA.Vin,
 								Level:       level,
 								ContentType: "head_collision",
 							},
 							Content: models.HeadCollisionNotificationContent{
-								TargetVehicleId:      vehicleB.Id,
+								TargetVehicleVin:     vehicleB.Vin,
 								TimeToCollision:      float32(metersDistance / 100.0),
 								MaxSpeedExceededBy:   10,
 								BreakingDistanceDiff: float32(metersDistance),
@@ -151,12 +151,12 @@ func simulateNotifications(connection *IntegrationModuleConnection, notification
 								BaseDatagram: models.BaseDatagram{
 									Type: "notify",
 								},
-								VehicleId:   vehicleB.Id,
+								VehicleVin:  vehicleB.Vin,
 								Level:       level,
 								ContentType: "head_collision",
 							},
 							Content: models.HeadCollisionNotificationContent{
-								TargetVehicleId:      vehicleA.Id,
+								TargetVehicleVin:     vehicleA.Vin,
 								TimeToCollision:      float32(metersDistance / 100.0),
 								MaxSpeedExceededBy:   10,
 								BreakingDistanceDiff: float32(metersDistance),
@@ -181,12 +181,12 @@ func simulateNotifications(connection *IntegrationModuleConnection, notification
 								BaseDatagram: models.BaseDatagram{
 									Type: "notify",
 								},
-								VehicleId:   vehicleA.Id,
+								VehicleVin:  vehicleA.Vin,
 								Level:       level,
 								ContentType: "chain_collision",
 							},
 							Content: models.ChainCollisionNotificationContent{
-								TargetVehicleId:     vehicleB.Id,
+								TargetVehicleVin:    vehicleB.Vin,
 								CurrentDistance:     float32(metersDistance),
 								RecommendedDistance: SafeDistance,
 							},
@@ -198,12 +198,12 @@ func simulateNotifications(connection *IntegrationModuleConnection, notification
 								BaseDatagram: models.BaseDatagram{
 									Type: "notify",
 								},
-								VehicleId:   vehicleB.Id,
+								VehicleVin:  vehicleB.Vin,
 								Level:       level,
 								ContentType: "chain_collision",
 							},
 							Content: models.ChainCollisionNotificationContent{
-								TargetVehicleId:     vehicleA.Id,
+								TargetVehicleVin:    vehicleA.Vin,
 								CurrentDistance:     float32(metersDistance),
 								RecommendedDistance: SafeDistance,
 							},
@@ -226,7 +226,7 @@ func simulateNotifications(connection *IntegrationModuleConnection, notification
 								BaseDatagram: models.BaseDatagram{
 									Type: "notify",
 								},
-								VehicleId:   vehicleA.Id,
+								VehicleVin:  vehicleA.Vin,
 								Level:       level,
 								ContentType: "crossroad",
 							},
@@ -243,7 +243,7 @@ func simulateNotifications(connection *IntegrationModuleConnection, notification
 								BaseDatagram: models.BaseDatagram{
 									Type: "notify",
 								},
-								VehicleId:   vehicleB.Id,
+								VehicleVin:  vehicleB.Vin,
 								Level:       level,
 								ContentType: "crossroad",
 							},
@@ -271,7 +271,7 @@ func simulateNotifications(connection *IntegrationModuleConnection, notification
 								BaseDatagram: models.BaseDatagram{
 									Type: "notify",
 								},
-								VehicleId:   vehicleA.Id,
+								VehicleVin:  vehicleA.Vin,
 								Level:       level,
 								ContentType: "generic",
 							},
@@ -286,7 +286,7 @@ func simulateNotifications(connection *IntegrationModuleConnection, notification
 								BaseDatagram: models.BaseDatagram{
 									Type: "notify",
 								},
-								VehicleId:   vehicleB.Id,
+								VehicleVin:  vehicleB.Vin,
 								Level:       level,
 								ContentType: "generic",
 							},

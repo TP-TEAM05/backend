@@ -6,11 +6,72 @@ import (
 	"recofiit/services/database"
 )
 
+func populateControllers() {
+	controllers := []models.Controller{
+		{
+			Name:        "TestController1",
+			Type:        "TestType1",
+			Description: "This is a test controller 1",
+		},
+		{
+			Name:        "TestController2",
+			Type:        "TestType2",
+			Description: "This is a test controller 2",
+		},
+	}
+
+	for _, controller := range controllers {
+		database.GetDB().Create(&controller)
+	}
+}
+
+func populateFirmwares() {
+	firmwares := []models.Firmware{
+		{
+			Version:     "Version 1.0",
+			Description: "First firmware version",
+		},
+		{
+			Version:     "Version 2.0",
+			Description: "Second firmware version",
+		},
+	}
+
+	for _, firmware := range firmwares {
+		database.GetDB().Create(&firmware)
+	}
+}
+
+func populateControllerInstances() {
+	controllerInstances := []models.ControllerInstance{
+		{
+			FirmwareID:   1,
+			ControllerID: 1,
+		},
+		{
+			FirmwareID:   2,
+			ControllerID: 2,
+		},
+	}
+
+	for _, instance := range controllerInstances {
+		database.GetDB().Create(&instance)
+	}
+}
+
+func getRandomControllerInstanceID() (uint, error) {
+	var id uint
+	if err := database.GetDB().Model(&models.ControllerInstance{}).Select("id").Order("RANDOM()").Limit(1).Pluck("id", &id).Error; err != nil {
+		return 0, err
+	}
+	return id, nil
+}
+
 func populateSensors() {
 	sensorTypes := []models.SensorType{
 		models.FRONT_LIDAR,
 		models.FRONT_ULTRASONIC,
-		models.REAR_ULTASONIC,
+		models.REAR_ULTRASONIC,
 		models.WHEEL_SPEED,
 		models.GPS_LOCATION,
 		models.GPS_SPEED,
@@ -18,16 +79,26 @@ func populateSensors() {
 		models.MAGNETOMETER_DIRECTION,
 	}
 
+	id, err := getRandomControllerInstanceID()
+	if err != nil {
+		// Handle error (log, return, etc.)
+		fmt.Println("Error getting ControllerInstanceID:", err)
+		return
+	}
+
 	for _, sensorType := range sensorTypes {
 		sensor := models.Sensor{
-			Name:       fmt.Sprintf("BaseSensor", sensorType),
-			SensorType: sensorType,
-			// You might need to add other fields depending on your actual model structure
+			ControllerInstanceID: id,
+			Name:                 "BaseSensor",
+			SensorType:           sensorType,
 		}
 		database.GetDB().FirstOrCreate(&sensor, models.Sensor{SensorType: sensorType})
 	}
 }
 
 func Init() {
+	populateControllers()
+	populateFirmwares()
+	populateControllerInstances()
 	populateSensors()
 }
