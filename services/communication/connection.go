@@ -137,7 +137,7 @@ func (connection *IntegrationModuleConnection) ProcessDatagram(data []byte, safe
 			}
 		}
 
-	case "update_vehicles":
+	case "update_vehicle_position":
 		var updateVehiclesDatagram UpdateVehiclesDatagram
 		_ = json.Unmarshal(data, &updateVehiclesDatagram)
 		connection.LastOnUpdateVehiclesDatagram = &updateVehiclesDatagram
