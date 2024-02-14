@@ -20,8 +20,7 @@ func (w WsSensorController) Get(req []byte) wsservice.WsResponse[interface{}] {
 
 	db := database.GetDB()
 	var sensor models.Sensor
-	sensor.ID = Req.Body.ID
-	db.Find(&sensor)
+	db.Find(&sensor, Req.Body.ID)
 
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "sensor",

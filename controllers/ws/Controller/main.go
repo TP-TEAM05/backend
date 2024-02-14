@@ -21,8 +21,7 @@ func (w WsControllerController) Get(req []byte) wsservice.WsResponse[interface{}
 
 	db := database.GetDB()
 	var ctrl models.Controller
-	ctrl.ID = Req.Body.ID
-	db.Find(&ctrl)
+	db.Find(&ctrl, Req.Body.ID)
 
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "controller",

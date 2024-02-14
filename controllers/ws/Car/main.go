@@ -21,8 +21,7 @@ func (w WsCarController) Get(req []byte) wsservice.WsResponse[interface{}] {
 
 	db := database.GetDB()
 	var car models.Car
-	car.Vin = Req.Body.Vin
-	db.Find(&car)
+	db.Where("vin = ?", Req.Body.Vin).First(&car)
 
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "car",
@@ -84,10 +83,8 @@ func (w WsCarController) Update(req []byte) wsservice.WsResponse[interface{}] {
 	db := database.GetDB()
 
 	var car models.Car
-	car.Vin = Req.Body.Vin
-	db.Find(&car)
+	db.Where("vin = ?", Req.Body.Vin).First(&car)
 
-	car.Vin = Req.Body.Vin
 	car.Name = Req.Body.Name
 	car.Color = Req.Body.Color
 
@@ -113,8 +110,7 @@ func (w WsCarController) Delete(req []byte) wsservice.WsResponse[interface{}] {
 	db := database.GetDB()
 
 	var car models.Car
-	car.Vin = Req.Body.Vin
-	db.Find(&car)
+	db.Where("vin = ?", Req.Body.Vin).First(&car)
 
 	db.Delete(&car)
 

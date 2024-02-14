@@ -144,6 +144,8 @@ func (connection *IntegrationModuleConnection) ProcessDatagram(data []byte, safe
 
 		// Send processed data to FE
 		controller := ws_session_namespace.WsSessionController{}
+		// time sleep 10 ms
+		time.Sleep(10 * time.Millisecond)
 		controller.SendLiveSessionData(&updateVehiclesDatagram)
 
 		select {

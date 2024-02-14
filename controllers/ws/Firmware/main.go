@@ -20,8 +20,7 @@ func (w WsFirmwareController) Get(req []byte) wsservice.WsResponse[interface{}] 
 
 	db := database.GetDB()
 	var fw models.Firmware
-	fw.ID = Req.Body.ID
-	db.Find(&fw)
+	db.Find(&fw, Req.Body.ID)
 
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "firmware",

@@ -21,8 +21,7 @@ func (w WsSessionController) Get(req []byte) wsservice.WsResponse[interface{}] {
 
 	db := database.GetDB()
 	var session models.Session
-	session.ID = Req.Body.ID
-	db.Find(&session)
+	db.Find(&session, Req.Body.ID)
 
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "session",
