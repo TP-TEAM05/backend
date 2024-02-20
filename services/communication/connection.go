@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	ws_session_namespace "recofiit/controllers/ws/Session"
+	"recofiit/models"
+	"recofiit/services/dataLogging"
 	"sync"
 	"time"
 )
@@ -12,8 +13,8 @@ import (
 type IConnection interface {
 	Establish()
 	ProcessDatagram(data []byte)
-	WriteDatagram(datagram IDatagram)
-	WriteAcknowledgedDatagram(datagram IDatagram, retries int) bool
+	WriteDatagram(datagram models.IDatagram)
+	WriteAcknowledgedDatagram(datagram models.IDatagram, retries int) bool
 }
 
 type IntegrationModuleConnection struct {
@@ -24,13 +25,13 @@ type IntegrationModuleConnection struct {
 	LastReceivedIndex int
 
 	// To check whether the subscription works
-	LastOnUpdateVehiclesDatagram      *UpdateVehiclesDatagram
-	LastOnUpdateNotificationsDatagram *UpdateNotificationsDatagram
+	LastOnUpdateVehiclesDatagram      *models.UpdateVehiclesDatagram
+	LastOnUpdateNotificationsDatagram *models.UpdateNotificationsDatagram
 
 	// Received datagrams
-	OnUpdateVehicles      chan UpdateVehiclesDatagram
-	OnUpdateNotifications chan UpdateNotificationsDatagram
-	OnArea                chan AreaDatagram
+	OnUpdateVehicles      chan models.UpdateVehiclesDatagram
+	OnUpdateNotifications chan models.UpdateNotificationsDatagram
+	OnArea                chan models.AreaDatagram
 
 	// Maps indexes of sent diagrams to channels waiting for their acknowledgement
 	AcknowledgeWaiters map[int]chan bool
@@ -44,9 +45,9 @@ func NewIntegrationModuleConnection(addr *net.UDPAddr) *IntegrationModuleConnect
 		NextSendIndex:         0,
 		LastReceivedIndex:     -1,
 		AcknowledgeWaiters:    make(map[int]chan bool),
-		OnUpdateVehicles:      make(chan UpdateVehiclesDatagram, 20),      // TODO constant
-		OnUpdateNotifications: make(chan UpdateNotificationsDatagram, 20), // TODO constant
-		OnArea:                make(chan AreaDatagram, 20),                // TODO constant
+		OnUpdateVehicles:      make(chan models.UpdateVehiclesDatagram, 20),      // TODO constant
+		OnUpdateNotifications: make(chan models.UpdateNotificationsDatagram, 20), // TODO constant
+		OnArea:                make(chan models.AreaDatagram, 20),                // TODO constant
 		Quit:                  make(chan bool),
 	}
 	var err error
@@ -85,13 +86,13 @@ func (connection *IntegrationModuleConnection) Establish() {
 	}()
 }
 
-func (connection *IntegrationModuleConnection) WriteDatagram(datagram IDatagram, safe bool) {
+func (connection *IntegrationModuleConnection) WriteDatagram(datagram models.IDatagram, safe bool) {
 	if safe {
 		connection.Lock()
 		defer connection.Unlock()
 	}
 
-	datagram.SetTimestamp(time.Now().UTC().Format(TimestampFormat))
+	datagram.SetTimestamp(time.Now().UTC().Format(models.TimestampFormat))
 	datagram.SetIndex(connection.NextSendIndex)
 
 	data, err := json.Marshal(datagram)
@@ -110,7 +111,7 @@ func (connection *IntegrationModuleConnection) ProcessDatagram(data []byte, safe
 	}
 
 	// Parse data to JSON
-	var datagram BaseDatagram
+	var datagram models.BaseDatagram
 	err := json.Unmarshal(data, &datagram)
 	if err != nil {
 		fmt.Print("Parsing JSON failed.")
@@ -125,7 +126,7 @@ func (connection *IntegrationModuleConnection) ProcessDatagram(data []byte, safe
 	switch datagram.Type {
 
 	case "acknowledge":
-		var acknowledgeDatagram AcknowledgeDatagram
+		var acknowledgeDatagram models.AcknowledgeDatagram
 		_ = json.Unmarshal(data, &acknowledgeDatagram)
 
 		// Check if anyone is waiting for this
@@ -138,14 +139,9 @@ func (connection *IntegrationModuleConnection) ProcessDatagram(data []byte, safe
 		}
 
 	case "update_vehicles":
-		var updateVehiclesDatagram UpdateVehiclesDatagram
+		var updateVehiclesDatagram models.UpdateVehiclesDatagram
 		_ = json.Unmarshal(data, &updateVehiclesDatagram)
 		connection.LastOnUpdateVehiclesDatagram = &updateVehiclesDatagram
-
-		// Send processed data to FE
-		controller := ws_session_namespace.WsSessionController{}
-		controller.SendLiveSessionData(&updateVehiclesDatagram)
-
 		select {
 		case connection.OnUpdateVehicles <- updateVehiclesDatagram:
 		default:
@@ -153,8 +149,14 @@ func (connection *IntegrationModuleConnection) ProcessDatagram(data []byte, safe
 			connection.OnUpdateVehicles <- updateVehiclesDatagram
 		}
 
+	case "update_vehicle_position":
+		// live updates served directly to a database
+		var updateVehiclesDatagram models.UpdatePositionVehicleDatagram
+		_ = json.Unmarshal(data, &updateVehiclesDatagram)
+		dataLogging.LogData(updateVehiclesDatagram)
+
 	case "update_notifications":
-		var updateNotificationsDatagram UpdateNotificationsDatagram
+		var updateNotificationsDatagram models.UpdateNotificationsDatagram
 		_ = json.Unmarshal(data, &updateNotificationsDatagram)
 		connection.LastOnUpdateNotificationsDatagram = &updateNotificationsDatagram
 		select {
@@ -165,7 +167,7 @@ func (connection *IntegrationModuleConnection) ProcessDatagram(data []byte, safe
 		}
 
 	case "area":
-		var areaDatagram AreaDatagram
+		var areaDatagram models.AreaDatagram
 		_ = json.Unmarshal(data, &areaDatagram)
 		select {
 		case connection.OnArea <- areaDatagram:
@@ -178,7 +180,7 @@ func (connection *IntegrationModuleConnection) ProcessDatagram(data []byte, safe
 	connection.LastReceivedIndex = datagram.Index
 }
 
-func (connection *IntegrationModuleConnection) WriteAcknowledgedDatagram(datagram IDatagram, retries int, safe bool) bool {
+func (connection *IntegrationModuleConnection) WriteAcknowledgedDatagram(datagram models.IDatagram, retries int, safe bool) bool {
 	remainingTries := retries
 	for remainingTries > 0 {
 		remainingTries--

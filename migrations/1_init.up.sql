@@ -1,7 +1,7 @@
 CREATE TYPE sensor_type AS ENUM (
   'FRONT_LIDAR',
   'FRONT_ULTRASONIC',
-  'REAR_ULTASONIC',
+  'REAR_ULTRASONIC',
   'WHEEL_SPEED',
   'GPS_LOCATION',
   'GPS_SPEED',
@@ -48,7 +48,7 @@ CREATE TABLE public.cars (
   color text
 );
 
-CREATE TABLE public.controller_instaces (
+CREATE TABLE public.controller_instances (
   id bigserial NOT NULL,
   created_at timestamp with time zone,
   updated_at timestamp with time zone,
@@ -81,7 +81,7 @@ CREATE TABLE public.sensors (
   created_at timestamp with time zone,
   updated_at timestamp with time zone,
   deleted_at timestamp with time zone,
-  controller_instace_id bigint,
+  controller_instance_id bigint,
   name character varying(255),
   sensor_type sensor_type
 );
@@ -96,7 +96,7 @@ CREATE TABLE public.sessions (
   ended_at timestamp with time zone
 );
 
-CREATE TABLE public.meassurements (
+CREATE TABLE public.measurements (
   car_session_id bigint,
   sensor_id bigint,
   created_at timestamp with time zone,
@@ -106,7 +106,7 @@ CREATE TABLE public.meassurements (
 
 -- CREATE HYPER_TABLES
 SELECT
-  create_hypertable('meassurements', 'created_at');
+  create_hypertable('measurements', 'created_at');
 
 -- ADD CONSTRAINTS
 ALTER TABLE
@@ -130,9 +130,9 @@ ADD
   CONSTRAINT cars_pkey PRIMARY KEY (id);
 
 ALTER TABLE
-  ONLY public.controller_instaces
+  ONLY public.controller_instances
 ADD
-  CONSTRAINT controller_instaces_pkey PRIMARY KEY (id);
+  CONSTRAINT controller_instances_pkey PRIMARY KEY (id);
 
 ALTER TABLE
   ONLY public.controllers
@@ -155,9 +155,9 @@ ADD
   CONSTRAINT sessions_pkey PRIMARY KEY (id);
 
 ALTER TABLE
-  public.meassurements
+  public.measurements
 ADD
-  CONSTRAINT fk_car_sessions_meassurements FOREIGN KEY (car_session_id) REFERENCES public.car_sessions(id);
+  CONSTRAINT fk_car_sessions_measurements FOREIGN KEY (car_session_id) REFERENCES public.car_sessions(id);
 
 ALTER TABLE
   ONLY public.car_sessions
@@ -165,24 +165,24 @@ ADD
   CONSTRAINT fk_car_sessions_session FOREIGN KEY (session_id) REFERENCES public.sessions(id);
 
 ALTER TABLE
-  ONLY public.controller_instaces
+  ONLY public.controller_instances
 ADD
   CONSTRAINT fk_controllers_controller_instances FOREIGN KEY (controller_id) REFERENCES public.controllers(id);
 
 ALTER TABLE
-  ONLY public.controller_instaces
+  ONLY public.controller_instances
 ADD
-  CONSTRAINT fk_firmwares_controller_instaces FOREIGN KEY (firmware_id) REFERENCES public.firmwares(id);
+  CONSTRAINT fk_firmwares_controller_instances FOREIGN KEY (firmware_id) REFERENCES public.firmwares(id);
 
 ALTER TABLE
-  public.meassurements
+  public.measurements
 ADD
-  CONSTRAINT fk_meassurements_sensor FOREIGN KEY (sensor_id) REFERENCES public.sensors(id);
+  CONSTRAINT fk_measurements_sensor FOREIGN KEY (sensor_id) REFERENCES public.sensors(id);
 
 ALTER TABLE
   ONLY public.sensors
 ADD
-  CONSTRAINT fk_sensors_controller_instace FOREIGN KEY (controller_instace_id) REFERENCES public.controller_instaces(id);
+  CONSTRAINT fk_sensors_controller_instance FOREIGN KEY (controller_instance_id) REFERENCES public.controller_instances(id);
 
 -- CREATE INDEXES
 CREATE INDEX idx_car_controllers_deleted_at ON public.car_controllers USING btree (deleted_at);
@@ -193,7 +193,7 @@ CREATE INDEX idx_car_sessions_deleted_at ON public.car_sessions USING btree (del
 
 CREATE INDEX idx_cars_deleted_at ON public.cars USING btree (deleted_at);
 
-CREATE INDEX idx_controller_instaces_deleted_at ON public.controller_instaces USING btree (deleted_at);
+CREATE INDEX idx_controller_instances_deleted_at ON public.controller_instances USING btree (deleted_at);
 
 CREATE INDEX idx_controllers_deleted_at ON public.controllers USING btree (deleted_at);
 
