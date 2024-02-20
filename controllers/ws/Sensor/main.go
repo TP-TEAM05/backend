@@ -62,13 +62,13 @@ func (w WsSensorController) Create(req []byte) wsservice.WsResponse[interface{}]
 	db.Find(&ctrl, Req.Body.ControllerID)
 
 	// refresh ControllerInstance
-	var ci models.ControllerInstace
+	var ci models.ControllerInstance
 	db.Where("controller_id = ?", ctrl.ID).Where("deleted_at is null").First(&ci)
 	ControllerController := ws_controller_namespace.WsControllerController{}
 	var newci = ControllerController.RefreshInstance(ctrl, ci, 0, 0, 0)
 
 	var sensor models.Sensor
-	sensor.ControllerInstaceID = newci.ID
+	sensor.ControllerInstanceID = newci.ID
 	sensor.Name = Req.Body.Name
 	sensor.SensorType = Req.Body.Type
 
@@ -121,8 +121,8 @@ func (w WsSensorController) Delete(req []byte) wsservice.WsResponse[interface{}]
 	var sensor models.Sensor
 	db.Find(&sensor, Req.Body.ID)
 
-	var ci models.ControllerInstace
-	db.Find(&ci, sensor.ControllerInstaceID)
+	var ci models.ControllerInstance
+	db.Find(&ci, sensor.ControllerInstanceID)
 
 	var ctrl models.Controller
 	db.Find(&ctrl, ci.ControllerID)

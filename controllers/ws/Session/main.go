@@ -4,6 +4,7 @@ import (
 	"recofiit/models"
 	"recofiit/services/database"
 	wsservice "recofiit/services/wsService"
+	"time"
 )
 
 type WsSessionController struct{}
@@ -58,7 +59,7 @@ func (w WsSessionController) Create(req []byte) wsservice.WsResponse[interface{}
 
 	db.Create(&session)
 
-	var cis []models.ControllerInstace
+	var cis []models.ControllerInstance
 	db.Where("car_id IN ?", Req.Body.Cars).Find(&cis)
 
 	var cscs []models.CarSessionController
@@ -79,11 +80,11 @@ func (w WsSessionController) Create(req []byte) wsservice.WsResponse[interface{}
 }
 func (w WsSessionController) Update(req []byte) wsservice.WsResponse[interface{}] {
 	type Body struct {
-		ID        uint     `json:"id"`
-		Cars      []string `json:"cars"`
-		Name      string   `json:"name"`
-		StartedAt *string  `json:"started_at"`
-		EndedAt   *string  `json:"ended_at"`
+		ID        uint       `json:"id"`
+		Cars      []string   `json:"cars"`
+		Name      string     `json:"name"`
+		StartedAt *time.Time `json:"started_at"`
+		EndedAt   *time.Time `json:"ended_at"`
 	}
 
 	var Req wsservice.WsRequestPrepared[Body]

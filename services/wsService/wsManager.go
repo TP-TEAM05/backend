@@ -1,11 +1,33 @@
 package wsservice
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"recofiit/utils"
+	"time"
 
 	"github.com/gorilla/websocket"
+)
+
+const (
+	// Time allowed to write a message to the peer.
+	writeWait = 10 * time.Second
+
+	// Time allowed to read the next pong message from the peer.
+	pongWait = 60 * time.Second
+
+	// Send pings to peer with this period. Must be less than pongWait.
+	pingPeriod = (pongWait * 9) / 10
+
+	// Maximum message size allowed from peer.
+	maxMessageSize = 512
+)
+
+var (
+	newline = []byte{'\n'}
+	space   = []byte{' '}
 )
 
 type Client struct {
@@ -82,9 +104,8 @@ func (manager *ClientManager) Start() {
 				}
 				manager.Clients = newClientsMap
 				manager.TotalConnections = manager.ActiveConnections
-
 			}
-			//broadcast
+		//broadcast
 		case message := <-manager.Broadcast:
 			//Traversing the client that has been connected, send the message to them
 			for conn := range manager.Clients {
@@ -112,18 +133,21 @@ func (manager *ClientManager) Send(message []byte, ignore *Client) {
 func (c *Client) Read() {
 	defer func() {
 		Manager.Unregister <- c
-		_ = c.Socket.Close()
+		c.Socket.Close()
 	}()
-
+	c.Socket.SetReadLimit(maxMessageSize)
+	c.Socket.SetReadDeadline(time.Now().Add(pongWait))
+	c.Socket.SetPongHandler(func(string) error { c.Socket.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
-		//Read message
 		_, message, err := c.Socket.ReadMessage()
-		//If there is an error message, cancel this connection and then close it
 		if err != nil {
-			Manager.Unregister <- c
-			_ = c.Socket.Close()
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Printf("error: %v", err)
+			}
 			break
 		}
+		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
+		Manager.Broadcast <- message
 
 		ReqJson := &WsRequest[interface{}]{}
 		ReqJson.Parse(message)
@@ -142,6 +166,7 @@ func (c *Client) Read() {
 }
 
 func (c *Client) Write() {
+	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		Manager.Unregister <- c
 		_ = c.Socket.Close()
@@ -151,13 +176,36 @@ func (c *Client) Write() {
 		select {
 		//Read the message from send
 		case message, ok := <-c.Send:
-			//If there is no message
+			c.Socket.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
-				_ = c.Socket.WriteMessage(websocket.CloseMessage, []byte{})
+				// The hub closed the channel.
+				c.Socket.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
-			//Write it if there is news and send it to the web side
-			_ = c.Socket.WriteMessage(websocket.TextMessage, message)
+
+			w, err := c.Socket.NextWriter(websocket.TextMessage)
+			if err != nil {
+				return
+			}
+			w.Write(message)
+
+			// Add queued chat messages to the current websocket message.
+			n := len(c.Send)
+			for i := 0; i < n; i++ {
+				w.Write(newline)
+				w.Write(<-c.Send)
+			}
+
+			if err := w.Close(); err != nil {
+				return
+			}
+
+		case <-ticker.C:
+			c.Socket.SetWriteDeadline(time.Now().Add(writeWait))
+			if err := c.Socket.WriteMessage(websocket.PingMessage, nil); err != nil {
+				return
+			}
+
 		}
 	}
 }

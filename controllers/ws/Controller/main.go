@@ -50,7 +50,7 @@ func (w WsControllerController) List(req []byte) wsservice.WsResponse[interface{
 			ctrlInstanceIds = append(ctrlInstanceIds, cc.ControllerInstanceID)
 		}
 
-		var controllerInstances []models.ControllerInstace
+		var controllerInstances []models.ControllerInstance
 		db.Find(&controllerInstances, ctrlInstanceIds)
 
 		ctrlIds := make([]uint, 0, len(controllerInstances))
@@ -84,10 +84,10 @@ func (w WsControllerController) Create(req []byte) wsservice.WsResponse[interfac
 	ctrl.Name = Req.Body.Name
 	ctrl.Type = Req.Body.Type
 	ctrl.Description = Req.Body.Description
-	ctrl.ControllerInstances = []models.ControllerInstace{}
+	ctrl.ControllerInstances = []models.ControllerInstance{}
 	db.Create(&ctrl)
 
-	var ci models.ControllerInstace
+	var ci models.ControllerInstance
 	ci.ControllerID = ctrl.ID
 	ci.FirmwareID = Req.Body.FirmwareID
 	db.Create(&ci)
@@ -114,7 +114,7 @@ func (w WsControllerController) Update(req []byte) wsservice.WsResponse[interfac
 	var ctrl models.Controller
 	db.Find(&ctrl, Req.Body.ID)
 
-	var ci models.ControllerInstace
+	var ci models.ControllerInstance
 	db.Where("controller_id = ?", ctrl.ID).Where("deleted_at is null").First(&ci)
 
 	ctrl.Name = Req.Body.Name
@@ -152,7 +152,7 @@ func (w WsControllerController) Delete(req []byte) wsservice.WsResponse[interfac
 
 	db.Delete(&ctrl)
 
-	var ci models.ControllerInstace
+	var ci models.ControllerInstance
 	db.Where("controller_id = ?", ctrl.ID).Where("deleted_at is null").First(&ci)
 
 	var carControllers []models.CarController
@@ -176,14 +176,14 @@ func (w WsControllerController) Delete(req []byte) wsservice.WsResponse[interfac
 
 func (w WsControllerController) RefreshInstance(
 	ctrl models.Controller,
-	ci models.ControllerInstace,
+	ci models.ControllerInstance,
 	newFirmwareID uint,
 	exceptSensorId uint,
 	exceptCarControllerId uint,
-) models.ControllerInstace {
+) models.ControllerInstance {
 	db := database.GetDB()
 
-	var newCi models.ControllerInstace
+	var newCi models.ControllerInstance
 	newCi.ControllerID = ctrl.ID
 	if newFirmwareID == 0 {
 		newCi.FirmwareID = ci.FirmwareID
@@ -217,7 +217,7 @@ func (w WsControllerController) RefreshInstance(
 		var newSensor models.Sensor
 		newSensor.Name = s.Name
 		newSensor.SensorType = s.SensorType
-		newSensor.ControllerInstaceID = newCi.ID
+		newSensor.ControllerInstanceID = newCi.ID
 		db.Save(&newSensor)
 
 		db.Delete(&s)
