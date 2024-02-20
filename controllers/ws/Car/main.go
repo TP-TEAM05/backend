@@ -1,17 +1,14 @@
 package ws_car_namespace
 
 import (
-	"fmt"
 	"recofiit/models"
 	"recofiit/services/database"
 	wsservice "recofiit/services/wsService"
-	"strconv"
 )
 
 type WsCarController struct{}
 
 func (w WsCarController) Get(req []byte) wsservice.WsResponse[interface{}] {
-	fmt.Println("GET CAR")
 	type Body struct {
 		Vin string `json:"vin"`
 	}
@@ -30,7 +27,6 @@ func (w WsCarController) Get(req []byte) wsservice.WsResponse[interface{}] {
 	}
 }
 func (w WsCarController) List(req []byte) wsservice.WsResponse[interface{}] {
-	fmt.Println("LIST CAR")
 	db := database.GetDB()
 	var cars []models.Car
 	db.Find(&cars)
@@ -42,7 +38,6 @@ func (w WsCarController) List(req []byte) wsservice.WsResponse[interface{}] {
 	}
 }
 func (w WsCarController) Create(req []byte) wsservice.WsResponse[interface{}] {
-	fmt.Println("CREATE CAR")
 	type Body struct {
 		Vin   string `json:"vin"`
 		Name  string `json:"name"`
@@ -61,8 +56,6 @@ func (w WsCarController) Create(req []byte) wsservice.WsResponse[interface{}] {
 
 	db.Create(&car)
 
-	fmt.Println("CREATED CAR " + strconv.Itoa(int(car.ID)))
-
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "car",
 		Endpoint:  "create",
@@ -70,7 +63,6 @@ func (w WsCarController) Create(req []byte) wsservice.WsResponse[interface{}] {
 	}
 }
 func (w WsCarController) Update(req []byte) wsservice.WsResponse[interface{}] {
-	fmt.Println("UPDATE CAR")
 	type Body struct {
 		Vin   string `json:"vin"`
 		Name  string `json:"name"`
@@ -90,8 +82,6 @@ func (w WsCarController) Update(req []byte) wsservice.WsResponse[interface{}] {
 
 	db.Save(&car)
 
-	fmt.Println("UPDATED CAR " + strconv.Itoa(int(car.ID)))
-
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "car",
 		Endpoint:  "update",
@@ -99,7 +89,6 @@ func (w WsCarController) Update(req []byte) wsservice.WsResponse[interface{}] {
 	}
 }
 func (w WsCarController) Delete(req []byte) wsservice.WsResponse[interface{}] {
-	fmt.Println("DELETE CAR")
 	type Body struct {
 		Vin string `json:"vin"`
 	}
@@ -113,8 +102,6 @@ func (w WsCarController) Delete(req []byte) wsservice.WsResponse[interface{}] {
 	db.Where("vin = ?", Req.Body.Vin).First(&car)
 
 	db.Delete(&car)
-
-	fmt.Println("DELETED CAR " + strconv.Itoa(int(car.ID)))
 
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "car",

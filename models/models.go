@@ -4,17 +4,17 @@ import (
 	"gorm.io/gorm"
 )
 
-type sensorType string
+type SensorType string
 
 const (
-	FRONT_LIDAR            sensorType = "FRONT_LIDAR"
-	FRONT_ULTRASONIC       sensorType = "FRONT_ULTRASONIC"
-	REAR_ULTASONIC         sensorType = "REAR_ULTASONIC"
-	WHEEL_SPEED            sensorType = "WHEEL_SPEED"
-	GPS_LOCATION           sensorType = "GPS_LOCATION"
-	GPS_SPEED              sensorType = "GPS_SPEED"
-	GPS_DIRECTION          sensorType = "GPS_DIRECTION"
-	MAGNETOMETER_DIRECTION sensorType = "MAGNETOMETER_DIRECTION"
+	FRONT_LIDAR            SensorType = "FRONT_LIDAR"
+	FRONT_ULTRASONIC       SensorType = "FRONT_ULTRASONIC"
+	REAR_ULTASONIC         SensorType = "REAR_ULTASONIC"
+	WHEEL_SPEED            SensorType = "WHEEL_SPEED"
+	GPS_LOCATION           SensorType = "GPS_LOCATION"
+	GPS_SPEED              SensorType = "GPS_SPEED"
+	GPS_DIRECTION          SensorType = "GPS_DIRECTION"
+	MAGNETOMETER_DIRECTION SensorType = "MAGNETOMETER_DIRECTION"
 )
 
 type Car struct {
@@ -55,7 +55,7 @@ type Sensor struct {
 	gorm.Model
 	ControllerInstaceID uint
 	Name                string     `gorm:"type:varchar(255)"`
-	SensorType          sensorType `gorm:"type:varchar(255)"`
+	SensorType          SensorType `gorm:"type:varchar(255)"`
 	ControllerInstace   ControllerInstace
 }
 

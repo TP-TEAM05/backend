@@ -1,17 +1,14 @@
 package ws_session_namespace
 
 import (
-	"fmt"
 	"recofiit/models"
 	"recofiit/services/database"
 	wsservice "recofiit/services/wsService"
-	"strconv"
 )
 
 type WsSessionController struct{}
 
 func (w WsSessionController) Get(req []byte) wsservice.WsResponse[interface{}] {
-	fmt.Println("GET SESSION")
 	type Body struct {
 		ID uint `json:"id"`
 	}
@@ -30,7 +27,6 @@ func (w WsSessionController) Get(req []byte) wsservice.WsResponse[interface{}] {
 	}
 }
 func (w WsSessionController) List(req []byte) wsservice.WsResponse[interface{}] {
-	fmt.Println("LIST SESSION")
 	db := database.GetDB()
 	var sessions []models.Session
 	db.Preload("Cars").Find(&sessions)
@@ -41,7 +37,6 @@ func (w WsSessionController) List(req []byte) wsservice.WsResponse[interface{}] 
 	}
 }
 func (w WsSessionController) Create(req []byte) wsservice.WsResponse[interface{}] {
-	fmt.Println("CREATE SESSION")
 	type Body struct {
 		Cars []string `json:"cars"`
 		Name string   `json:"name"`
@@ -75,8 +70,6 @@ func (w WsSessionController) Create(req []byte) wsservice.WsResponse[interface{}
 	}
 	db.Create(&cscs)
 
-	fmt.Println("CREATED SESSION " + strconv.Itoa(int(session.ID)))
-
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "session",
 		Endpoint:  "create",
@@ -85,7 +78,6 @@ func (w WsSessionController) Create(req []byte) wsservice.WsResponse[interface{}
 
 }
 func (w WsSessionController) Update(req []byte) wsservice.WsResponse[interface{}] {
-	fmt.Println("UPDATE SESSION")
 	type Body struct {
 		ID        uint     `json:"id"`
 		Cars      []string `json:"cars"`
@@ -113,8 +105,6 @@ func (w WsSessionController) Update(req []byte) wsservice.WsResponse[interface{}
 
 	db.Save(&session)
 
-	fmt.Println("UPDATED SESSION " + strconv.Itoa(int(session.ID)))
-
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "session",
 		Endpoint:  "update",
@@ -122,7 +112,6 @@ func (w WsSessionController) Update(req []byte) wsservice.WsResponse[interface{}
 	}
 }
 func (w WsSessionController) Delete(req []byte) wsservice.WsResponse[interface{}] {
-	fmt.Println("DELETE SESSION")
 	type Body struct {
 		ID uint `json:"id"`
 	}
@@ -136,8 +125,6 @@ func (w WsSessionController) Delete(req []byte) wsservice.WsResponse[interface{}
 	db.Find(&session, Req.Body.ID)
 
 	db.Delete(&session)
-
-	fmt.Println("DELETED SESSION " + strconv.Itoa(int(session.ID)))
 
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "session",

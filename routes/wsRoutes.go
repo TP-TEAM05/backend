@@ -37,7 +37,7 @@ func SetupWs(m *wsservice.ClientManager) {
 	r.Register("firmware", "list", FirmwareController.List)
 	r.Register("firmware", "create", FirmwareController.Create)
 	r.Register("firmware", "update", FirmwareController.Update)
-	r.Register("firmware", "delete", FirmwareController.Delete)
+	//r.Register("firmware", "delete", FirmwareController.Delete)
 
 	// Sensor routes
 	r.Register("sensor", "get", SensorController.Get)

@@ -1,7 +1,6 @@
 package ws_firmware_namespace
 
 import (
-	"fmt"
 	"recofiit/models"
 	"recofiit/services/database"
 	wsservice "recofiit/services/wsService"
@@ -10,7 +9,6 @@ import (
 type WsFirmwareController struct{}
 
 func (w WsFirmwareController) Get(req []byte) wsservice.WsResponse[interface{}] {
-	fmt.Println("GET FIRMWARE")
 	type Body struct {
 		ID uint `json:"id"`
 	}
@@ -29,7 +27,6 @@ func (w WsFirmwareController) Get(req []byte) wsservice.WsResponse[interface{}] 
 	}
 }
 func (w WsFirmwareController) List(req []byte) wsservice.WsResponse[interface{}] {
-	fmt.Println("LIST FIRMWARE")
 	db := database.GetDB()
 	var fws []models.Firmware
 	db.Find(&fws)
@@ -41,7 +38,6 @@ func (w WsFirmwareController) List(req []byte) wsservice.WsResponse[interface{}]
 	}
 }
 func (w WsFirmwareController) Create(req []byte) wsservice.WsResponse[interface{}] {
-	fmt.Println("CREATE FIRMWARE")
 	type Body struct {
 		Version     string `json:"version"`
 		Description string `json:"description"`
@@ -64,8 +60,29 @@ func (w WsFirmwareController) Create(req []byte) wsservice.WsResponse[interface{
 	}
 }
 func (w WsFirmwareController) Update(req []byte) wsservice.WsResponse[interface{}] {
-	return wsservice.WsResponse[interface{}]{}
-}
-func (w WsFirmwareController) Delete(req []byte) wsservice.WsResponse[interface{}] {
-	return wsservice.WsResponse[interface{}]{}
+	type Body struct {
+		ID          uint   `json:"id"`
+		Version     string `json:"version"`
+		Description string `json:"description"`
+	}
+
+	var Req wsservice.WsRequestPrepared[Body]
+
+	Req.Parse(req)
+
+	db := database.GetDB()
+
+	var fw models.Firmware
+	db.Find(&fw, Req.Body.ID)
+
+	fw.Version = Req.Body.Version
+	fw.Description = Req.Body.Description
+
+	db.Save(&fw)
+
+	return wsservice.WsResponse[interface{}]{
+		Namespace: "firmware",
+		Endpoint:  "update",
+		Body:      fw,
+	}
 }

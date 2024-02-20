@@ -1,17 +1,14 @@
 package ws_controller_namespace
 
 import (
-	"fmt"
 	"recofiit/models"
 	"recofiit/services/database"
 	wsservice "recofiit/services/wsService"
-	"strconv"
 )
 
 type WsControllerController struct{}
 
 func (w WsControllerController) Get(req []byte) wsservice.WsResponse[interface{}] {
-	fmt.Println("GET CONTROLLER")
 	type Body struct {
 		ID uint `json:"id"`
 	}
@@ -30,7 +27,6 @@ func (w WsControllerController) Get(req []byte) wsservice.WsResponse[interface{}
 	}
 }
 func (w WsControllerController) List(req []byte) wsservice.WsResponse[interface{}] {
-	fmt.Println("LIST CONTROLLER")
 	type Body struct {
 		CarVin *string `json:"vin"`
 	}
@@ -43,10 +39,26 @@ func (w WsControllerController) List(req []byte) wsservice.WsResponse[interface{
 	if Req.Body.CarVin == nil {
 		db.Find(&ctrls)
 	} else {
-		var cars []models.Car
-		db.Where("vin = ?", Req.Body.CarVin).Find(&cars)
+		var car models.Car
+		db.Where("vin = ?", *Req.Body.CarVin).First(&car)
 
-		db.Where("car_id = ?", cars[0].ID).Find(&ctrls)
+		var carControllers []models.CarController
+		db.Where("car_id = ?", car.ID).Find(&carControllers)
+
+		ctrlInstanceIds := make([]uint, 0, len(carControllers))
+		for _, cc := range carControllers {
+			ctrlInstanceIds = append(ctrlInstanceIds, cc.ControllerInstanceID)
+		}
+
+		var controllerInstances []models.ControllerInstace
+		db.Find(&controllerInstances, ctrlInstanceIds)
+
+		ctrlIds := make([]uint, 0, len(controllerInstances))
+		for _, ci := range controllerInstances {
+			ctrlIds = append(ctrlIds, ci.ControllerID)
+		}
+
+		db.Find(&ctrls, ctrlIds)
 	}
 
 	return wsservice.WsResponse[interface{}]{
@@ -56,7 +68,6 @@ func (w WsControllerController) List(req []byte) wsservice.WsResponse[interface{
 	}
 }
 func (w WsControllerController) Create(req []byte) wsservice.WsResponse[interface{}] {
-	fmt.Println("CREATE CONTROLLER")
 	type Body struct {
 		Name        string `json:"name"`
 		Type        string `json:"type"`
@@ -88,10 +99,45 @@ func (w WsControllerController) Create(req []byte) wsservice.WsResponse[interfac
 	}
 }
 func (w WsControllerController) Update(req []byte) wsservice.WsResponse[interface{}] {
-	return wsservice.WsResponse[interface{}]{} // TODO add update
+	type Body struct {
+		ID          uint   `json:"id"`
+		Name        string `json:"name"`
+		Type        string `json:"type"`
+		Description string `json:"description"`
+		FirmwareID  uint   `json:"firmware_id"`
+	}
+	var Req wsservice.WsRequestPrepared[Body]
+	Req.Parse(req)
+
+	db := database.GetDB()
+
+	var ctrl models.Controller
+	db.Find(&ctrl, Req.Body.ID)
+
+	var ci models.ControllerInstace
+	db.Where("controller_id = ?", ctrl.ID).Where("deleted_at is null").First(&ci)
+
+	ctrl.Name = Req.Body.Name
+	ctrl.Type = Req.Body.Type
+	ctrl.Description = Req.Body.Description
+
+	db.Save(&ctrl)
+
+	// IF the firmwareID is the same, change only the controller
+	// OTHERWISE change also the controller instance and copy car_controllers and sensors
+	if ci.FirmwareID != Req.Body.FirmwareID {
+		w.RefreshInstance(ctrl, ci, Req.Body.FirmwareID, 0, 0)
+
+		db.Delete(&ci)
+	}
+
+	return wsservice.WsResponse[interface{}]{
+		Namespace: "controller",
+		Endpoint:  "update",
+		Body:      ctrl,
+	}
 }
 func (w WsControllerController) Delete(req []byte) wsservice.WsResponse[interface{}] {
-	fmt.Println("DELETE CONTROLLER")
 	type Body struct {
 		ID uint `json:"id"`
 	}
@@ -106,11 +152,75 @@ func (w WsControllerController) Delete(req []byte) wsservice.WsResponse[interfac
 
 	db.Delete(&ctrl)
 
-	fmt.Println("DELETED CONTROLLER " + strconv.Itoa(int(ctrl.ID)))
+	var ci models.ControllerInstace
+	db.Where("controller_id = ?", ctrl.ID).Where("deleted_at is null").First(&ci)
+
+	var carControllers []models.CarController
+	db.Where("controller_instance_id = ?", ci.ID).Find(&carControllers)
+
+	db.Delete(&carControllers)
+
+	var sensors []models.Sensor
+	db.Where("controller_instance_id = ?", ci.ID).Find(&sensors)
+
+	db.Delete(&sensors)
+
+	db.Delete(&ci)
 
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "controller",
 		Endpoint:  "delete",
 		Body:      ctrl,
 	}
+}
+
+func (w WsControllerController) RefreshInstance(
+	ctrl models.Controller,
+	ci models.ControllerInstace,
+	newFirmwareID uint,
+	exceptSensorId uint,
+	exceptCarControllerId uint,
+) models.ControllerInstace {
+	db := database.GetDB()
+
+	var newCi models.ControllerInstace
+	newCi.ControllerID = ctrl.ID
+	if newFirmwareID == 0 {
+		newCi.FirmwareID = ci.FirmwareID
+	} else {
+		newCi.FirmwareID = newFirmwareID
+	}
+	db.Create(&newCi)
+
+	var carControllers []models.CarController
+	db.Where("controller_instance_id = ?", ci.ID).Find(&carControllers)
+
+	for _, cc := range carControllers {
+		if cc.ID == exceptCarControllerId {
+			continue
+		}
+		var newCc models.CarController
+		newCc.CarID = cc.CarID
+		newCc.ControllerInstanceID = newCi.ID
+		db.Save(&newCc)
+
+		db.Delete(&cc)
+	}
+
+	var sensors []models.Sensor
+	db.Where("controller_instance_id = ?", ci.ID).Find(&sensors)
+
+	for _, s := range sensors {
+		if s.ID == exceptSensorId {
+			continue
+		}
+		var newSensor models.Sensor
+		newSensor.Name = s.Name
+		newSensor.SensorType = s.SensorType
+		newSensor.ControllerInstaceID = newCi.ID
+		db.Save(&newSensor)
+
+		db.Delete(&s)
+	}
+	return newCi
 }
