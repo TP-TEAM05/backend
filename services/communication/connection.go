@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	ws_session_namespace "recofiit/controllers/ws/Session"
 	"recofiit/models"
 	"recofiit/services/dataLogging"
 	"sync"
@@ -142,6 +143,13 @@ func (connection *IntegrationModuleConnection) ProcessDatagram(data []byte, safe
 		var updateVehiclesDatagram models.UpdateVehiclesDatagram
 		_ = json.Unmarshal(data, &updateVehiclesDatagram)
 		connection.LastOnUpdateVehiclesDatagram = &updateVehiclesDatagram
+
+		// Send processed data to FE
+		controller := ws_session_namespace.WsSessionController{}
+		// time sleep 10 ms
+		time.Sleep(10 * time.Millisecond)
+		controller.SendLiveSessionData(&updateVehiclesDatagram)
+
 		select {
 		case connection.OnUpdateVehicles <- updateVehiclesDatagram:
 		default:
