@@ -22,8 +22,8 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lib/pq v1.10.2 // indirect
-	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/redis/go-redis/v9 v9.3.0 // indirect
+	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/stretchr/objx v0.5.1 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	golang.org/x/tools v0.14.0 // indirect

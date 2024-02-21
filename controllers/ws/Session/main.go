@@ -1,17 +1,15 @@
 package ws_session_namespace
 
 import (
-	"fmt"
 	"recofiit/models"
 	"recofiit/services/database"
 	wsservice "recofiit/services/wsService"
-	"strconv"
+	"time"
 )
 
 type WsSessionController struct{}
 
 func (w WsSessionController) Get(req []byte) wsservice.WsResponse[interface{}] {
-	fmt.Println("GET SESSION")
 	type Body struct {
 		ID uint `json:"id"`
 	}
@@ -21,8 +19,7 @@ func (w WsSessionController) Get(req []byte) wsservice.WsResponse[interface{}] {
 
 	db := database.GetDB()
 	var session models.Session
-	session.ID = Req.Body.ID
-	db.Find(&session)
+	db.Find(&session, Req.Body.ID)
 
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "session",
@@ -31,7 +28,6 @@ func (w WsSessionController) Get(req []byte) wsservice.WsResponse[interface{}] {
 	}
 }
 func (w WsSessionController) List(req []byte) wsservice.WsResponse[interface{}] {
-	fmt.Println("LIST SESSION")
 	db := database.GetDB()
 	var sessions []models.Session
 	db.Preload("Cars").Find(&sessions)
@@ -42,7 +38,6 @@ func (w WsSessionController) List(req []byte) wsservice.WsResponse[interface{}] 
 	}
 }
 func (w WsSessionController) Create(req []byte) wsservice.WsResponse[interface{}] {
-	fmt.Println("CREATE SESSION")
 	type Body struct {
 		Cars []string `json:"cars"`
 		Name string   `json:"name"`
@@ -64,7 +59,17 @@ func (w WsSessionController) Create(req []byte) wsservice.WsResponse[interface{}
 
 	db.Create(&session)
 
-	fmt.Println("CREATED SESSION " + strconv.Itoa(int(session.ID)))
+	var cis []models.ControllerInstance
+	db.Where("car_id IN ?", Req.Body.Cars).Find(&cis)
+
+	var cscs []models.CarSessionController
+	for _, ci := range cis {
+		var csc models.CarSessionController
+		csc.CarSessionID = session.ID
+		csc.ControllerInstanceID = ci.ID
+		cscs = append(cscs, csc)
+	}
+	db.Create(&cscs)
 
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "session",
@@ -74,8 +79,57 @@ func (w WsSessionController) Create(req []byte) wsservice.WsResponse[interface{}
 
 }
 func (w WsSessionController) Update(req []byte) wsservice.WsResponse[interface{}] {
-	return wsservice.WsResponse[interface{}]{}
+	type Body struct {
+		ID        uint       `json:"id"`
+		Cars      []string   `json:"cars"`
+		Name      string     `json:"name"`
+		StartedAt *time.Time `json:"started_at"`
+		EndedAt   *time.Time `json:"ended_at"`
+	}
+
+	var Req wsservice.WsRequestPrepared[Body]
+
+	Req.Parse(req)
+
+	var cars []models.Car
+
+	db := database.GetDB()
+	db.Where("vin IN ?", Req.Body.Cars).Find(&cars)
+
+	var session models.Session
+	db.Find(&session, Req.Body.ID)
+
+	session.Name = Req.Body.Name
+	session.Cars = cars
+	session.StartedAt = Req.Body.StartedAt
+	session.EndedAt = Req.Body.EndedAt
+
+	db.Save(&session)
+
+	return wsservice.WsResponse[interface{}]{
+		Namespace: "session",
+		Endpoint:  "update",
+		Body:      session,
+	}
 }
 func (w WsSessionController) Delete(req []byte) wsservice.WsResponse[interface{}] {
-	return wsservice.WsResponse[interface{}]{}
+	type Body struct {
+		ID uint `json:"id"`
+	}
+	var Req wsservice.WsRequestPrepared[Body]
+
+	Req.Parse(req)
+
+	db := database.GetDB()
+
+	var session models.Session
+	db.Find(&session, Req.Body.ID)
+
+	db.Delete(&session)
+
+	return wsservice.WsResponse[interface{}]{
+		Namespace: "session",
+		Endpoint:  "delete",
+		Body:      session,
+	}
 }
