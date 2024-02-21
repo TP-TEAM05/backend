@@ -8,6 +8,15 @@ import (
 
 type WsControllerController struct{}
 
+type ExtendedController struct {
+	ID          uint
+	Name        string
+	Type        string
+	Description string
+	FirmwareID  uint
+	CarVin      string
+}
+
 func (w WsControllerController) Get(req []byte) wsservice.WsResponse[interface{}] {
 	type Body struct {
 		ID uint `json:"id"`
@@ -20,10 +29,31 @@ func (w WsControllerController) Get(req []byte) wsservice.WsResponse[interface{}
 	var ctrl models.Controller
 	db.Find(&ctrl, Req.Body.ID)
 
+	var ec ExtendedController
+	ec.ID = ctrl.ID
+	ec.Name = ctrl.Name
+	ec.Type = ctrl.Type
+	ec.Description = ctrl.Description
+
+	var carControllers []models.CarController
+	db.Where("controller_id = ?", ctrl.ID).Where("deleted_at is null").Find(&carControllers)
+
+	if len(carControllers) > 0 {
+		var car models.Car
+		db.First(&car, carControllers[0].CarID)
+
+		ec.CarVin = car.Vin
+
+		var ci models.ControllerInstance
+		db.Where("controller_id = ?", ctrl.ID).Where("deleted_at is null").First(&ci)
+
+		ec.FirmwareID = ci.FirmwareID
+	}
+
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "controller",
 		Endpoint:  "get",
-		Body:      ctrl,
+		Body:      ec,
 	}
 }
 func (w WsControllerController) List(req []byte) wsservice.WsResponse[interface{}] {
@@ -61,10 +91,37 @@ func (w WsControllerController) List(req []byte) wsservice.WsResponse[interface{
 		db.Find(&ctrls, ctrlIds)
 	}
 
+	ctrls_extended := make([]ExtendedController, 0, len(ctrls))
+
+	for _, c := range ctrls {
+		var ec ExtendedController
+		ec.ID = c.ID
+		ec.Name = c.Name
+		ec.Type = c.Type
+		ec.Description = c.Description
+
+		var carControllers []models.CarController
+		db.Where("controller_id = ?", c.ID).Where("deleted_at is null").Find(&carControllers)
+
+		if len(carControllers) > 0 {
+			var car models.Car
+			db.First(&car, carControllers[0].CarID)
+
+			ec.CarVin = car.Vin
+
+			var ci models.ControllerInstance
+			db.Where("controller_id = ?", c.ID).Where("deleted_at is null").First(&ci)
+
+			ec.FirmwareID = ci.FirmwareID
+		}
+
+		ctrls_extended = append(ctrls_extended, ec)
+	}
+
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "controller",
 		Endpoint:  "list",
-		Body:      ctrls,
+		Body:      ctrls_extended,
 	}
 }
 func (w WsControllerController) Create(req []byte) wsservice.WsResponse[interface{}] {
