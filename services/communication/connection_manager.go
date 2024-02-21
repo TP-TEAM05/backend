@@ -110,8 +110,8 @@ func simulateNotifications(connection *IntegrationModuleConnection, notification
 				vehicleB := vehicles[j]
 
 				_, km := geodist.HaversineDistance(
-					geodist.Coord{Lat: float64(vehicleA.GPSLocation.Latitude), Lon: float64(vehicleA.GPSLocation.Longitude)},
-					geodist.Coord{Lat: float64(vehicleB.GPSLocation.Latitude), Lon: float64(vehicleB.GPSLocation.Longitude)})
+					geodist.Coord{Lat: float64(vehicleA.Latitude), Lon: float64(vehicleA.Longitude)},
+					geodist.Coord{Lat: float64(vehicleB.Latitude), Lon: float64(vehicleB.Longitude)})
 
 				metersDistance := km * 1000.0
 
