@@ -115,7 +115,7 @@ func (connection *IntegrationModuleConnection) ProcessDatagram(data []byte, safe
 	var datagram models.BaseDatagram
 	err := json.Unmarshal(data, &datagram)
 	if err != nil {
-		fmt.Print("Parsing JSON failed.")
+		fmt.Print("Parsing JSON failed: ", err)
 		return
 	}
 	// TODO uncomment this

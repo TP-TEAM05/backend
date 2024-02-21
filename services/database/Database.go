@@ -12,7 +12,7 @@ func DBConnect() *gorm.DB {
 	dsn := "host=timescaledb user=postgres password=postgres dbname=postgres port=5432 sslmode=disable"
 	DB, DBerr = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if DBerr != nil {
-		panic("Failed to connect database")
+		panic("Failed to connect database " + DBerr.Error() + "\n")
 	}
 	return DB
 }
