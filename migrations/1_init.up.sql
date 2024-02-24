@@ -1,12 +1,12 @@
 CREATE TYPE sensor_type AS ENUM (
-  'LONGITUDE',
-  'LATITUDE',
-  'DISTANCE_ULTRASONIC',
-  'DISTANCE_LIDAR',
-  'SPEED_FRONT_LEFT',
-  'SPEED_FRONT_RIGHT',
-  'SPEED_REAR_LEFT',
-  'SPEED_REAR_RIGHT'
+  'FRONT_LIDAR',
+  'FRONT_ULTRASONIC',
+  'REAR_ULTRASONIC',
+  'WHEEL_SPEED',
+  'GPS_LOCATION',
+  'GPS_SPEED',
+  'GPS_DIRECTION',
+  'MAGNETOMETER_DIRECTION'
 );
 
 -- CREATE TABLES
@@ -100,7 +100,8 @@ CREATE TABLE public.measurements (
   car_session_id bigint,
   sensor_id bigint,
   created_at timestamp with time zone,
-  data double precision
+  data1 double precision,
+  data2 double precision
 );
 
 -- CREATE HYPER_TABLES
