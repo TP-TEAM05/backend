@@ -69,8 +69,7 @@ func getRandomControllerInstanceID() (uint, error) {
 
 func populateSensors() {
 	sensorTypes := []models.SensorType{
-		models.LONGITUDE,
-		models.LATITUDE,
+		models.GPS,
 		models.DISTANCE_ULTRASONIC,
 		models.DISTANCE_LIDAR,
 		models.SPEED_FRONT_LEFT,

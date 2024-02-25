@@ -9,8 +9,7 @@ import (
 type SensorType string
 
 const (
-	LONGITUDE           SensorType = "LONGITUDE"
-	LATITUDE            SensorType = "LATITUDE"
+	GPS                 SensorType = "GPS"
 	DISTANCE_ULTRASONIC SensorType = "DISTANCE_ULTRASONIC"
 	DISTANCE_LIDAR      SensorType = "DISTANCE_LIDAR"
 	SPEED_FRONT_LEFT    SensorType = "SPEED_FRONT_LEFT"
