@@ -47,7 +47,8 @@ type Measurement struct {
 	SensorID     uint
 	latency      int
 	CreatedAt    *time.Time `gorm:"type:timestamptz"`
-	Data         float32    `gorm:"type:double precision"`
+	Data1        float32    `gorm:"type:double precision"`
+	Data2        float32    `gorm:"type:double precision"`
 	Sensor       Sensor
 	CarSession   CarSession
 }

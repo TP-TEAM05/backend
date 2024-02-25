@@ -14,7 +14,7 @@ func LogData(datagram models.UpdateVehicleDatagram) {
 		panic("Failed to create session and car session")
 	}
 
-	SaveMeasurement(*measurementController, carSessionID, "GPS", datagram.Vehicle.Latitude, datagram.Vehicle.Longitude)
+	SaveMeasurement(*measurementController, carSessionID, "GPS", datagram.Vehicle.Latitude, &datagram.Vehicle.Longitude)
 	SaveMeasurement(*measurementController, carSessionID, "DISTANCE_ULTRASONIC", datagram.Vehicle.DistanceUltrasonic, nil)
 	SaveMeasurement(*measurementController, carSessionID, "DISTANCE_LIDAR", datagram.Vehicle.DistanceLidar, nil)
 	SaveMeasurement(*measurementController, carSessionID, "SPEED_FRONT_LEFT", datagram.Vehicle.SpeedFrontLeft, nil)
