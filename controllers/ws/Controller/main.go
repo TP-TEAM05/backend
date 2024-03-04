@@ -9,12 +9,12 @@ import (
 type WsControllerController struct{}
 
 type ExtendedController struct {
-	ID          uint
-	Name        string
-	Type        string
-	Description string
-	FirmwareID  uint
-	CarVin      string
+	ID          uint   `json:"id"`
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Description string `json:"description"`
+	FirmwareID  uint   `json:"firmware_id"`
+	CarVin      string `json:"car_vin"`
 }
 
 func (w WsControllerController) Get(req []byte) wsservice.WsResponse[interface{}] {
