@@ -10,7 +10,9 @@ type SensorType string
 
 const (
 	GPS                 SensorType = "GPS"
+	CAR_DIRECTION       SensorType = "CAR_DIRECTION"
 	DISTANCE_ULTRASONIC SensorType = "DISTANCE_ULTRASONIC"
+	REAR_ULTRASONIC     SensorType = "REAR_ULTRASONIC"
 	DISTANCE_LIDAR      SensorType = "DISTANCE_LIDAR"
 	SPEED_FRONT_LEFT    SensorType = "SPEED_FRONT_LEFT"
 	SPEED_FRONT_RIGHT   SensorType = "SPEED_FRONT_RIGHT"
