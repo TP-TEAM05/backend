@@ -9,6 +9,13 @@ import (
 
 type WsSensorController struct{}
 
+type ExtendedSensor struct {
+	ID           uint              `json:"id"`
+	ControllerID uint              `json:"controller_id"`
+	Name         string            `json:"name"`
+	SensorType   models.SensorType `json:"sensor_type"`
+}
+
 func (w WsSensorController) Get(req []byte) wsservice.WsResponse[interface{}] {
 	type Body struct {
 		ID uint `json:"id"`
@@ -21,28 +28,50 @@ func (w WsSensorController) Get(req []byte) wsservice.WsResponse[interface{}] {
 	var sensor models.Sensor
 	db.Find(&sensor, Req.Body.ID)
 
+	var es ExtendedSensor
+	es.ID = sensor.ID
+	es.ControllerID = sensor.ControllerInstance.ControllerID
+	es.Name = sensor.Name
+	es.SensorType = sensor.SensorType
+
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "sensor",
 		Endpoint:  "get",
-		Body:      sensor,
+		Body:      es,
 	}
 }
 func (w WsSensorController) List(req []byte) wsservice.WsResponse[interface{}] {
 	type Body struct {
-		ControllerInstanceID uint `json:"controller_instance_id"`
+		ControllerID uint `json:"controller_id"`
 	}
 
 	var Req wsservice.WsRequestPrepared[Body]
 	Req.Parse(req)
 
 	db := database.GetDB()
+
+	var ci models.ControllerInstance
+	db.Where("controller_id = ?", Req.Body.ControllerID).Where("deleted_at is null").First(&ci)
+
 	var sensors []models.Sensor
-	db.Where("controller_instance_id = ?", Req.Body.ControllerInstanceID).Find(&sensors)
+	db.Where("controller_instance_id = ?", ci.ControllerID).Preload("ControllerInstance").Find(&sensors)
+
+	sensors_extended := make([]ExtendedSensor, 0, len(sensors))
+
+	for _, s := range sensors {
+		var es ExtendedSensor
+		es.ID = s.ID
+		es.ControllerID = s.ControllerInstance.ControllerID
+		es.Name = s.Name
+		es.SensorType = s.SensorType
+
+		sensors_extended = append(sensors_extended, es)
+	}
 
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "sensor",
 		Endpoint:  "list",
-		Body:      sensors,
+		Body:      sensors_extended,
 	}
 }
 func (w WsSensorController) Create(req []byte) wsservice.WsResponse[interface{}] {
