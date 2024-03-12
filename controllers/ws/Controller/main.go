@@ -9,12 +9,12 @@ import (
 type WsControllerController struct{}
 
 type ExtendedController struct {
-	ID          uint   `json:"id"`
-	Name        string `json:"name"`
-	Type        string `json:"type"`
-	Description string `json:"description"`
-	FirmwareID  uint   `json:"firmware_id"`
-	CarVin      string `json:"car_vin"`
+	ID          uint    `json:"id"`
+	Name        string  `json:"name"`
+	Type        string  `json:"type"`
+	Description string  `json:"description"`
+	FirmwareID  uint    `json:"firmware_id"`
+	Vin         *string `json:"vin"`
 }
 
 func (w WsControllerController) Get(req []byte) wsservice.WsResponse[interface{}] {
@@ -35,19 +35,19 @@ func (w WsControllerController) Get(req []byte) wsservice.WsResponse[interface{}
 	ec.Type = ctrl.Type
 	ec.Description = ctrl.Description
 
+	var ci models.ControllerInstance
+	db.Where("controller_id = ?", ctrl.ID).Where("deleted_at is null").First(&ci)
+
+	ec.FirmwareID = ci.FirmwareID
+
 	var carControllers []models.CarController
-	db.Where("controller_id = ?", ctrl.ID).Where("deleted_at is null").Find(&carControllers)
+	db.Where("controller_instance_id = ?", ci.ID).Where("deleted_at is null").Find(&carControllers)
 
 	if len(carControllers) > 0 {
 		var car models.Car
 		db.First(&car, carControllers[0].CarID)
 
-		ec.CarVin = car.Vin
-
-		var ci models.ControllerInstance
-		db.Where("controller_id = ?", ctrl.ID).Where("deleted_at is null").First(&ci)
-
-		ec.FirmwareID = ci.FirmwareID
+		ec.Vin = &car.Vin
 	}
 
 	return wsservice.WsResponse[interface{}]{
@@ -100,19 +100,19 @@ func (w WsControllerController) List(req []byte) wsservice.WsResponse[interface{
 		ec.Type = c.Type
 		ec.Description = c.Description
 
+		var ci models.ControllerInstance
+		db.Where("controller_id = ?", c.ID).Where("deleted_at is null").First(&ci)
+
+		ec.FirmwareID = ci.FirmwareID
+
 		var carControllers []models.CarController
-		db.Where("controller_id = ?", c.ID).Where("deleted_at is null").Find(&carControllers)
+		db.Where("controller_instance_id = ?", ci.ID).Where("deleted_at is null").Find(&carControllers)
 
 		if len(carControllers) > 0 {
 			var car models.Car
 			db.First(&car, carControllers[0].CarID)
 
-			ec.CarVin = car.Vin
-
-			var ci models.ControllerInstance
-			db.Where("controller_id = ?", c.ID).Where("deleted_at is null").First(&ci)
-
-			ec.FirmwareID = ci.FirmwareID
+			ec.Vin = &car.Vin
 		}
 
 		ctrls_extended = append(ctrls_extended, ec)

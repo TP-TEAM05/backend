@@ -78,7 +78,7 @@ func (w WsSensorController) Create(req []byte) wsservice.WsResponse[interface{}]
 	type Body struct {
 		ControllerID string            `json:"controller_id"`
 		Name         string            `json:"name"`
-		Type         models.SensorType `json:"type"`
+		Type         models.SensorType `json:"sensor_type"`
 	}
 
 	var Req wsservice.WsRequestPrepared[Body]
@@ -113,7 +113,7 @@ func (w WsSensorController) Update(req []byte) wsservice.WsResponse[interface{}]
 	type Body struct {
 		ID   string            `json:"id"`
 		Name string            `json:"name"`
-		Type models.SensorType `json:"type"`
+		Type models.SensorType `json:"sensor_type"`
 	}
 
 	var Req wsservice.WsRequestPrepared[Body]
