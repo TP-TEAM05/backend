@@ -103,14 +103,14 @@ func populateSensors() {
 func populateCars() {
 	cars := []models.Car{
 		{
-			Vin:   "1234567890",
-			Name:  "TestCar1",
-			Color: "Red",
+			Vin:   "C4RF117S7U0000001",
+			Name:  "Car 1",
+			Color: "#0033ff",
 		},
 		{
-			Vin:   "0987654321",
-			Name:  "TestCar2",
-			Color: "Blue",
+			Vin:   "C4RF117S7U0000002",
+			Name:  "Car 2",
+			Color: "#009900",
 		},
 	}
 
