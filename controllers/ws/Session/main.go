@@ -19,7 +19,7 @@ func (w WsSessionController) Get(req []byte) wsservice.WsResponse[interface{}] {
 
 	db := database.GetDB()
 	var session models.Session
-	db.Find(&session, Req.Body.ID)
+	db.First(&session, Req.Body.ID)
 
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "session",
@@ -97,7 +97,7 @@ func (w WsSessionController) Update(req []byte) wsservice.WsResponse[interface{}
 	db.Where("vin IN ?", Req.Body.Cars).Find(&cars)
 
 	var session models.Session
-	db.Find(&session, Req.Body.ID)
+	db.First(&session, Req.Body.ID)
 
 	session.Name = Req.Body.Name
 	session.Cars = cars
@@ -123,7 +123,7 @@ func (w WsSessionController) Delete(req []byte) wsservice.WsResponse[interface{}
 	db := database.GetDB()
 
 	var session models.Session
-	db.Find(&session, Req.Body.ID)
+	db.First(&session, Req.Body.ID)
 
 	db.Delete(&session)
 
