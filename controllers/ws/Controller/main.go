@@ -28,7 +28,7 @@ func (w WsControllerController) Get(req []byte) wsservice.WsResponse[interface{}
 
 	db := database.GetDB()
 	var ctrl models.Controller
-	db.Find(&ctrl, Req.Body.ID)
+	db.First(&ctrl, Req.Body.ID)
 
 	var ec = w.ExtendController(ctrl, db)
 
@@ -163,7 +163,7 @@ func (w WsControllerController) Update(req []byte) wsservice.WsResponse[interfac
 	db := database.GetDB()
 
 	var ctrl models.Controller
-	db.Find(&ctrl, Req.Body.ID)
+	db.First(&ctrl, Req.Body.ID)
 
 	var ci models.ControllerInstance
 	db.Where("controller_id = ?", ctrl.ID).Where("deleted_at is null").First(&ci)
@@ -195,8 +195,6 @@ func (w WsControllerController) Update(req []byte) wsservice.WsResponse[interfac
 	// OTHERWISE change also the controller instance and copy car_controllers and sensors
 	if ci.FirmwareID != fid {
 		var newCi = w.RefreshInstance(ctrl, ci, fid, 0, 0)
-
-		db.Delete(&ci)
 
 		ci = newCi
 	}
@@ -231,7 +229,7 @@ func (w WsControllerController) Delete(req []byte) wsservice.WsResponse[interfac
 	db := database.GetDB()
 
 	var ctrl models.Controller
-	db.Find(&ctrl, Req.Body.ID)
+	db.First(&ctrl, Req.Body.ID)
 
 	db.Delete(&ctrl)
 
@@ -305,6 +303,9 @@ func (w WsControllerController) RefreshInstance(
 
 		db.Delete(&s)
 	}
+
+	db.Delete(&ci, ci.ID)
+
 	return newCi
 }
 
