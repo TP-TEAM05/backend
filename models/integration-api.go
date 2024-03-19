@@ -71,7 +71,7 @@ type UnsubscribeDatagram struct {
 
 type AcknowledgeDatagram struct {
 	BaseDatagram
-	AcknowledgingIndex int `json:"acknowledgingIndex"`
+	AcknowledgingIndex int `json:"acknowledging_index"`
 }
 
 type KeepAliveDatagram struct {
@@ -88,15 +88,15 @@ type RequestAreaDatagram struct {
 
 type AreaDatagram struct {
 	BaseDatagram
-	TopLeft     PositionJSON `json:"topLeft"`
-	BottomRight PositionJSON `json:"bottomRight"`
+	TopLeft     PositionJSON `json:"top_left"`
+	BottomRight PositionJSON `json:"bottom_right"`
 }
 
 type NotifyDatagram struct {
 	BaseDatagram
-	VehicleVin  string `json:"vehicleVin"`
+	VehicleVin  string `json:"vehicle_vin"`
 	Level       string `json:"level"`
-	ContentType string `json:"contentType"`
+	ContentType string `json:"content_type"`
 }
 
 func (notifyDatagram *NotifyDatagram) GetNotifyDatagram() *NotifyDatagram {
@@ -142,7 +142,7 @@ func (notifyDatagram *CrossroadNotifyDatagram) GetContent() interface{} {
 type NotifyVehicleDatagram struct {
 	BaseDatagram
 	Level       string `json:"level"`
-	ContentType string `json:"contentType"`
+	ContentType string `json:"content_type"`
 }
 
 type GenericNotifyVehicleDatagram struct {
@@ -181,7 +181,7 @@ type ConnectVehicleDatagram struct {
 
 type DisconnectVehicleDatagram struct {
 	BaseDatagram
-	ConnectTo string `json:"connectTo"`
+	ConnectTo string `json:"connect_to"`
 }
 
 type UpdateVehicleDatagram struct {
@@ -200,28 +200,28 @@ type UpdateVehiclesVehicle struct {
 	Type            string  `json:"type"`
 	Longitude       float32 `json:"longitude"`
 	Latitude        float32 `json:"latitude"`
-	GpsDirection    float32 `json:"gpsDirection"`
-	FrontUltrasonic float32 `json:"frontUltrasonic"`
-	RearUltrasonic  float32 `json:"rearUltrasonic"`
-	FrontLidar      float32 `json:"frontLidar"`
-	SpeedFrontLeft  float32 `json:"speedFrontLeft"`
-	SpeedFrontRight float32 `json:"speedFrontRight"`
-	SpeedRearLeft   float32 `json:"speedRearLeft"`
-	SpeedRearRight  float32 `json:"speedRearRight"`
+	GpsDirection    float32 `json:"gps_direction"`
+	FrontUltrasonic float32 `json:"front_ultrasonic"`
+	RearUltrasonic  float32 `json:"rear_ultrasonic"`
+	FrontLidar      float32 `json:"front_lidar"`
+	SpeedFrontLeft  float32 `json:"speed_front_left"`
+	SpeedFrontRight float32 `json:"speed_front_right"`
+	SpeedRearLeft   float32 `json:"speed_rear_left"`
+	SpeedRearRight  float32 `json:"speed_rear_right"`
 }
 
 type UpdateVehicleVehicle struct {
 	Vin             string  `json:"vin"`
 	Longitude       float32 `json:"longitude"`
 	Latitude        float32 `json:"latitude"`
-	GpsDirection    float32 `json:"gpsDirection"`
-	FrontUltrasonic float32 `json:"frontUltrasonic"`
-	RearUltrasonic  float32 `json:"rearUltrasonic"`
-	FrontLidar      float32 `json:"frontLidar"`
-	SpeedFrontLeft  float32 `json:"speedFrontLeft"`
-	SpeedFrontRight float32 `json:"speedFrontRight"`
-	SpeedRearLeft   float32 `json:"speedRearLeft"`
-	SpeedRearRight  float32 `json:"speedRearRight"`
+	GpsDirection    float32 `json:"gps_direction"`
+	FrontUltrasonic float32 `json:"front_ultrasonic"`
+	RearUltrasonic  float32 `json:"rear_ultrasonic"`
+	FrontLidar      float32 `json:"front_lidar"`
+	SpeedFrontLeft  float32 `json:"speed_front_left"`
+	SpeedFrontRight float32 `json:"speed_front_right"`
+	SpeedRearLeft   float32 `json:"speed_rear_left"`
+	SpeedRearRight  float32 `json:"speed_rear_right"`
 }
 
 type UpdateNotificationsDatagram struct {
@@ -231,9 +231,9 @@ type UpdateNotificationsDatagram struct {
 
 type UpdateNotificationsNotification struct {
 	Timestamp   string      `json:"timestamp"`
-	VehicleId   int         `json:"vehicleId"`
+	VehicleId   int         `json:"vehicle_id"`
 	Level       string      `json:"level"`
-	ContentType string      `json:"contentType"`
+	ContentType string      `json:"content_type"`
 	Content     interface{} `json:"content"`
 }
 
