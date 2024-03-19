@@ -115,7 +115,7 @@ func (connection *IntegrationModuleConnection) ProcessDatagram(data []byte, safe
 	var datagram models.BaseDatagram
 	err := json.Unmarshal(data, &datagram)
 	if err != nil {
-		fmt.Print("Parsing JSON failed.")
+		fmt.Print("Parsing JSON failed: ", err)
 		return
 	}
 	// TODO uncomment this
@@ -159,9 +159,12 @@ func (connection *IntegrationModuleConnection) ProcessDatagram(data []byte, safe
 
 	case "update_vehicle_position":
 		// live updates served directly to a database
-		var updateVehiclesDatagram models.UpdatePositionVehicleDatagram
+		var updateVehiclesDatagram models.UpdateVehicleDatagram
 		_ = json.Unmarshal(data, &updateVehiclesDatagram)
 		dataLogging.LogData(updateVehiclesDatagram)
+		// Send processed data to FE
+		controller := ws_session_namespace.WsSessionController{}
+		controller.SendLiveSessionData(&updateVehiclesDatagram)
 
 	case "update_notifications":
 		var updateNotificationsDatagram models.UpdateNotificationsDatagram

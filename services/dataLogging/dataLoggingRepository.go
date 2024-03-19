@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func LogData(datagram models.UpdatePositionVehicleDatagram) {
+func LogData(datagram models.UpdateVehicleDatagram) {
 	var carController = NewCarController()
 	var measurementController = NewMeasurementController()
 
@@ -14,14 +14,15 @@ func LogData(datagram models.UpdatePositionVehicleDatagram) {
 		panic("Failed to create session and car session")
 	}
 
-	SaveMeasurement(*measurementController, carSessionID, "FRONT_LIDAR", datagram.Vehicle.FrontLidar, nil)
-	SaveMeasurement(*measurementController, carSessionID, "FRONT_ULTRASONIC", datagram.Vehicle.FrontUltrasonic, nil)
+	SaveMeasurement(*measurementController, carSessionID, "GPS", datagram.Vehicle.Latitude, &datagram.Vehicle.Longitude)
+	SaveMeasurement(*measurementController, carSessionID, "CAR_DIRECTION", datagram.Vehicle.CarDirection, nil)
+	SaveMeasurement(*measurementController, carSessionID, "DISTANCE_ULTRASONIC", datagram.Vehicle.DistanceUltrasonic, nil)
 	SaveMeasurement(*measurementController, carSessionID, "REAR_ULTRASONIC", datagram.Vehicle.RearUltrasonic, nil)
-	SaveMeasurement(*measurementController, carSessionID, "WHEEL_SPEED", datagram.Vehicle.WheelSpeed, nil)
-	SaveMeasurement(*measurementController, carSessionID, "GPS_LOCATION", datagram.Vehicle.GPSLocation.Latitude, &datagram.Vehicle.GPSLocation.Longitude)
-	SaveMeasurement(*measurementController, carSessionID, "GPS_SPEED", datagram.Vehicle.GPSSpeed, nil)
-	SaveMeasurement(*measurementController, carSessionID, "GPS_DIRECTION", datagram.Vehicle.GPSDirection, nil)
-	SaveMeasurement(*measurementController, carSessionID, "MAGNETOMETER_DIRECTION", datagram.Vehicle.MagnetometerDirection, nil)
+	SaveMeasurement(*measurementController, carSessionID, "DISTANCE_LIDAR", datagram.Vehicle.DistanceLidar, nil)
+	SaveMeasurement(*measurementController, carSessionID, "SPEED_FRONT_LEFT", datagram.Vehicle.SpeedFrontLeft, nil)
+	SaveMeasurement(*measurementController, carSessionID, "SPEED_FRONT_RIGHT", datagram.Vehicle.SpeedFrontRight, nil)
+	SaveMeasurement(*measurementController, carSessionID, "SPEED_REAR_LEFT", datagram.Vehicle.SpeedRearLeft, nil)
+	SaveMeasurement(*measurementController, carSessionID, "SPEED_REAR_RIGHT", datagram.Vehicle.SpeedRearRight, nil)
 }
 
 func SaveMeasurement(measurementController MeasurementController, carSessionID uint, sensorName string, data1 float32, data2 *float32) {

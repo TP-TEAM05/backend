@@ -9,14 +9,15 @@ import (
 type SensorType string
 
 const (
-	FRONT_LIDAR            SensorType = "FRONT_LIDAR"
-	FRONT_ULTRASONIC       SensorType = "FRONT_ULTRASONIC"
-	REAR_ULTRASONIC        SensorType = "REAR_ULTRASONIC"
-	WHEEL_SPEED            SensorType = "WHEEL_SPEED"
-	GPS_LOCATION           SensorType = "GPS_LOCATION"
-	GPS_SPEED              SensorType = "GPS_SPEED"
-	GPS_DIRECTION          SensorType = "GPS_DIRECTION"
-	MAGNETOMETER_DIRECTION SensorType = "MAGNETOMETER_DIRECTION"
+	GPS                 SensorType = "GPS"
+	CAR_DIRECTION       SensorType = "CAR_DIRECTION"
+	DISTANCE_ULTRASONIC SensorType = "DISTANCE_ULTRASONIC"
+	REAR_ULTRASONIC     SensorType = "REAR_ULTRASONIC"
+	DISTANCE_LIDAR      SensorType = "DISTANCE_LIDAR"
+	SPEED_FRONT_LEFT    SensorType = "SPEED_FRONT_LEFT"
+	SPEED_FRONT_RIGHT   SensorType = "SPEED_FRONT_RIGHT"
+	SPEED_REAR_LEFT     SensorType = "SPEED_REAR_LEFT"
+	SPEED_REAR_RIGHT    SensorType = "SPEED_REAR_RIGHT"
 )
 
 type BaseModel struct {

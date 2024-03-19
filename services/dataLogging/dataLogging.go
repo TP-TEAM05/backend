@@ -69,14 +69,15 @@ func getRandomControllerInstanceID() (uint, error) {
 
 func populateSensors() {
 	sensorTypes := []models.SensorType{
-		models.FRONT_LIDAR,
-		models.FRONT_ULTRASONIC,
+		models.GPS,
+		models.CAR_DIRECTION,
+		models.DISTANCE_ULTRASONIC,
 		models.REAR_ULTRASONIC,
-		models.WHEEL_SPEED,
-		models.GPS_LOCATION,
-		models.GPS_SPEED,
-		models.GPS_DIRECTION,
-		models.MAGNETOMETER_DIRECTION,
+		models.DISTANCE_LIDAR,
+		models.SPEED_FRONT_LEFT,
+		models.SPEED_FRONT_RIGHT,
+		models.SPEED_REAR_LEFT,
+		models.SPEED_REAR_RIGHT,
 	}
 
 	id, err := getRandomControllerInstanceID()
