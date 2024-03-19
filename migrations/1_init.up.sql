@@ -2,10 +2,14 @@ CREATE TYPE sensor_type AS ENUM (
   'FRONT_LIDAR',
   'FRONT_ULTRASONIC',
   'REAR_ULTRASONIC',
-  'WHEEL_SPEED',
+  'SPEED_FRONT_LEFT',
+  'SPEED_FRONT_RIGHT',
+  'SPEED_REAR_LEFT',
+  'SPEED_REAR_RIGHT',
   'GPS_LOCATION',
   'GPS_SPEED',
   'GPS_DIRECTION',
+  'GPS_ADDITIONAL',
   'MAGNETOMETER_DIRECTION'
 );
 
@@ -183,6 +187,31 @@ ALTER TABLE
   ONLY public.sensors
 ADD
   CONSTRAINT fk_sensors_controller_instance FOREIGN KEY (controller_instance_id) REFERENCES public.controller_instances(id);
+
+ALTER TABLE
+  ONLY public.car_sessions
+ADD
+  CONSTRAINT fk_car_session_car FOREIGN KEY (car_id) REFERENCES public.cars(id);
+
+ALTER TABLE
+  ONLY public.car_controllers
+ADD
+  CONSTRAINT fk_car_controller_car FOREIGN KEY (car_id) REFERENCES public.cars(id);
+
+ALTER TABLE
+  ONLY public.car_controllers
+ADD
+  CONSTRAINT fk_car_controller_controller_instance FOREIGN KEY (controller_instance_id) REFERENCES public.controller_instances(id);
+
+ALTER TABLE
+  ONLY public.car_session_controllers
+ADD
+  CONSTRAINT fk_car_session_controller_car_session FOREIGN KEY (car_session_id) REFERENCES public.car_sessions(id);
+
+ALTER TABLE
+  ONLY public.car_session_controllers
+ADD
+  CONSTRAINT fk_car_session_controller_controller_instance FOREIGN KEY (controller_instance_id) REFERENCES public.controller_instances(id);
 
 -- CREATE INDEXES
 CREATE INDEX idx_car_controllers_deleted_at ON public.car_controllers USING btree (deleted_at);

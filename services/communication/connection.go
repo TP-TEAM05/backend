@@ -70,7 +70,6 @@ func (connection *IntegrationModuleConnection) Establish() {
 			readBufferLength, err := connection.UDPConn.Read(readBuffer)
 			data := readBuffer[:readBufferLength]
 
-			fmt.Printf("Read a message %s ... \n", data[:min(len(data), 128)])
 			if err != nil {
 				fmt.Printf("Error reading message %v\n", err)
 				continue
@@ -102,7 +101,6 @@ func (connection *IntegrationModuleConnection) WriteDatagram(datagram models.IDa
 	}
 	_, _ = connection.UDPConn.Write(data)
 	connection.NextSendIndex++
-	fmt.Printf("Sending message to %v: %s\n", connection.ServerAddress, data[:min(len(data), 128)])
 }
 
 func (connection *IntegrationModuleConnection) ProcessDatagram(data []byte, safe bool) {

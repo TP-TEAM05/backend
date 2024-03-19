@@ -69,15 +69,18 @@ func getRandomControllerInstanceID() (uint, error) {
 
 func populateSensors() {
 	sensorTypes := []models.SensorType{
-		models.GPS,
-		models.CAR_DIRECTION,
-		models.DISTANCE_ULTRASONIC,
+		models.GPS_LOCATION,
+		models.GPS_SPEED,
+		models.GPS_DIRECTION,
+		models.GPS_ADDITIONAL,
+		models.FRONT_ULTRASONIC,
 		models.REAR_ULTRASONIC,
-		models.DISTANCE_LIDAR,
+		models.FRONT_LIDAR,
 		models.SPEED_FRONT_LEFT,
 		models.SPEED_FRONT_RIGHT,
 		models.SPEED_REAR_LEFT,
 		models.SPEED_REAR_RIGHT,
+		models.MAGNETOMETER_DIRECTION,
 	}
 
 	id, err := getRandomControllerInstanceID()
@@ -97,9 +100,30 @@ func populateSensors() {
 	}
 }
 
+func populateCars() {
+	cars := []models.Car{
+		{
+			Vin:   "1234567890",
+			Name:  "TestCar1",
+			Color: "Red",
+		},
+		{
+			Vin:   "0987654321",
+			Name:  "TestCar2",
+			Color: "Blue",
+		},
+	}
+
+	for _, car := range cars {
+		database.GetDB().Create(&car)
+	}
+
+}
+
 func Init() {
-	//populateControllers()
-	//populateFirmwares()
-	//populateControllerInstances()
-	//populateSensors()
+	// populateControllers()
+	// populateFirmwares()
+	// populateControllerInstances()
+	// populateSensors()
+	// populateCars()
 }

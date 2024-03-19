@@ -14,11 +14,11 @@ func LogData(datagram models.UpdateVehicleDatagram) {
 		panic("Failed to create session and car session")
 	}
 
-	SaveMeasurement(*measurementController, carSessionID, "GPS", datagram.Vehicle.Latitude, &datagram.Vehicle.Longitude)
-	SaveMeasurement(*measurementController, carSessionID, "CAR_DIRECTION", datagram.Vehicle.CarDirection, nil)
-	SaveMeasurement(*measurementController, carSessionID, "DISTANCE_ULTRASONIC", datagram.Vehicle.DistanceUltrasonic, nil)
+	SaveMeasurement(*measurementController, carSessionID, "GPS_LOCATION", datagram.Vehicle.Latitude, &datagram.Vehicle.Longitude)
+	SaveMeasurement(*measurementController, carSessionID, "GPS_DIRECTION", datagram.Vehicle.GpsDirection, nil)
+	SaveMeasurement(*measurementController, carSessionID, "FRONT_ULTRASONIC", datagram.Vehicle.FrontUltrasonic, nil)
 	SaveMeasurement(*measurementController, carSessionID, "REAR_ULTRASONIC", datagram.Vehicle.RearUltrasonic, nil)
-	SaveMeasurement(*measurementController, carSessionID, "DISTANCE_LIDAR", datagram.Vehicle.DistanceLidar, nil)
+	SaveMeasurement(*measurementController, carSessionID, "FRONT_LIDAR", datagram.Vehicle.FrontLidar, nil)
 	SaveMeasurement(*measurementController, carSessionID, "SPEED_FRONT_LEFT", datagram.Vehicle.SpeedFrontLeft, nil)
 	SaveMeasurement(*measurementController, carSessionID, "SPEED_FRONT_RIGHT", datagram.Vehicle.SpeedFrontRight, nil)
 	SaveMeasurement(*measurementController, carSessionID, "SPEED_REAR_LEFT", datagram.Vehicle.SpeedRearLeft, nil)
