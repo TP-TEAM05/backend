@@ -98,8 +98,8 @@ func populateSensors() {
 }
 
 func Init() {
-	populateControllers()
-	populateFirmwares()
-	populateControllerInstances()
-	populateSensors()
+	//populateControllers()
+	//populateFirmwares()
+	//populateControllerInstances()
+	//populateSensors()
 }

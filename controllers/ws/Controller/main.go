@@ -1,12 +1,22 @@
 package ws_controller_namespace
 
 import (
+	"gorm.io/gorm"
 	"recofiit/models"
 	"recofiit/services/database"
 	wsservice "recofiit/services/wsService"
 )
 
 type WsControllerController struct{}
+
+type ExtendedController struct {
+	ID          uint    `json:"id"`
+	Name        string  `json:"name"`
+	Type        string  `json:"type"`
+	Description string  `json:"description"`
+	FirmwareID  uint    `json:"firmware_id"`
+	Vin         *string `json:"vin"`
+}
 
 func (w WsControllerController) Get(req []byte) wsservice.WsResponse[interface{}] {
 	type Body struct {
@@ -18,12 +28,14 @@ func (w WsControllerController) Get(req []byte) wsservice.WsResponse[interface{}
 
 	db := database.GetDB()
 	var ctrl models.Controller
-	db.Find(&ctrl, Req.Body.ID)
+	db.First(&ctrl, Req.Body.ID)
+
+	var ec = w.ExtendController(ctrl, db)
 
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "controller",
 		Endpoint:  "get",
-		Body:      ctrl,
+		Body:      ec,
 	}
 }
 func (w WsControllerController) List(req []byte) wsservice.WsResponse[interface{}] {
@@ -61,18 +73,29 @@ func (w WsControllerController) List(req []byte) wsservice.WsResponse[interface{
 		db.Find(&ctrls, ctrlIds)
 	}
 
+	ctrls_extended := make([]ExtendedController, 0, len(ctrls))
+
+	for _, c := range ctrls {
+		var ec = w.ExtendController(c, db)
+
+		ctrls_extended = append(ctrls_extended, ec)
+	}
+
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "controller",
 		Endpoint:  "list",
-		Body:      ctrls,
+		Body:      ctrls_extended,
 	}
 }
 func (w WsControllerController) Create(req []byte) wsservice.WsResponse[interface{}] {
 	type Body struct {
-		Name        string `json:"name"`
-		Type        string `json:"type"`
-		Description string `json:"description"`
-		FirmwareID  uint   `json:"firmware_id"`
+		Name                string `json:"name"`
+		Type                string `json:"type"`
+		Description         string `json:"description"`
+		FirmwareID          uint   `json:"firmware_id"`
+		FirmwareVersion     string `json:"firmware_version"`
+		FirmwareDescription string `json:"firmware_description"`
+		Vin                 string `json:"vin"`
 	}
 	var Req wsservice.WsRequestPrepared[Body]
 
@@ -89,22 +112,50 @@ func (w WsControllerController) Create(req []byte) wsservice.WsResponse[interfac
 
 	var ci models.ControllerInstance
 	ci.ControllerID = ctrl.ID
-	ci.FirmwareID = Req.Body.FirmwareID
+
+	if Req.Body.FirmwareID == 0 {
+		var f models.Firmware
+		f.Version = Req.Body.FirmwareVersion
+		f.Description = Req.Body.FirmwareDescription
+
+		db.Create(&f)
+
+		ci.FirmwareID = f.ID
+	} else {
+		ci.FirmwareID = Req.Body.FirmwareID
+	}
+
 	db.Create(&ci)
+
+	if Req.Body.Vin != "" {
+		var car models.Car
+		db.Where("vin = ?", Req.Body.Vin).First(&car)
+
+		var cc models.CarController
+		cc.CarID = car.ID
+		cc.ControllerInstanceID = ci.ID
+
+		db.Create(&cc)
+	}
+
+	var ec = w.ExtendController(ctrl, db)
 
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "controller",
 		Endpoint:  "create",
-		Body:      ctrl,
+		Body:      ec,
 	}
 }
 func (w WsControllerController) Update(req []byte) wsservice.WsResponse[interface{}] {
 	type Body struct {
-		ID          uint   `json:"id"`
-		Name        string `json:"name"`
-		Type        string `json:"type"`
-		Description string `json:"description"`
-		FirmwareID  uint   `json:"firmware_id"`
+		ID                  uint   `json:"id"`
+		Name                string `json:"name"`
+		Type                string `json:"type"`
+		Description         string `json:"description"`
+		FirmwareID          uint   `json:"firmware_id"`
+		FirmwareVersion     string `json:"firmware_version"`
+		FirmwareDescription string `json:"firmware_description"`
+		Vin                 string `json:"vin"`
 	}
 	var Req wsservice.WsRequestPrepared[Body]
 	Req.Parse(req)
@@ -112,7 +163,7 @@ func (w WsControllerController) Update(req []byte) wsservice.WsResponse[interfac
 	db := database.GetDB()
 
 	var ctrl models.Controller
-	db.Find(&ctrl, Req.Body.ID)
+	db.First(&ctrl, Req.Body.ID)
 
 	var ci models.ControllerInstance
 	db.Where("controller_id = ?", ctrl.ID).Where("deleted_at is null").First(&ci)
@@ -123,18 +174,48 @@ func (w WsControllerController) Update(req []byte) wsservice.WsResponse[interfac
 
 	db.Save(&ctrl)
 
+	var fid = Req.Body.FirmwareID
+
+	if Req.Body.FirmwareID == 0 {
+		var f models.Firmware
+		f.Version = Req.Body.FirmwareVersion
+		f.Description = Req.Body.FirmwareDescription
+
+		db.Create(&f)
+
+		fid = f.ID
+	}
+
+	var ccs []models.CarController
+	db.Where("controller_instance_id = ?", ci.ID).Where("deleted_at is null").Find(&ccs)
+
+	db.Delete(&ccs)
+
 	// IF the firmwareID is the same, change only the controller
 	// OTHERWISE change also the controller instance and copy car_controllers and sensors
-	if ci.FirmwareID != Req.Body.FirmwareID {
-		w.RefreshInstance(ctrl, ci, Req.Body.FirmwareID, 0, 0)
+	if ci.FirmwareID != fid {
+		var newCi = w.RefreshInstance(ctrl, ci, fid, 0, 0)
 
-		db.Delete(&ci)
+		ci = newCi
 	}
+
+	if Req.Body.Vin != "" {
+		var car models.Car
+		db.Where("vin = ?", Req.Body.Vin).First(&car)
+
+		var cc models.CarController
+		cc.CarID = car.ID
+		cc.ControllerInstanceID = ci.ID
+
+		db.Create(&cc)
+	}
+
+	var ec = w.ExtendController(ctrl, db)
 
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "controller",
 		Endpoint:  "update",
-		Body:      ctrl,
+		Body:      ec,
 	}
 }
 func (w WsControllerController) Delete(req []byte) wsservice.WsResponse[interface{}] {
@@ -148,7 +229,7 @@ func (w WsControllerController) Delete(req []byte) wsservice.WsResponse[interfac
 	db := database.GetDB()
 
 	var ctrl models.Controller
-	db.Find(&ctrl, Req.Body.ID)
+	db.First(&ctrl, Req.Body.ID)
 
 	db.Delete(&ctrl)
 
@@ -222,5 +303,35 @@ func (w WsControllerController) RefreshInstance(
 
 		db.Delete(&s)
 	}
+
+	db.Delete(&ci, ci.ID)
+
 	return newCi
+}
+
+func (w WsControllerController) ExtendController(
+	ctrl models.Controller, db *gorm.DB) ExtendedController {
+
+	var ec ExtendedController
+	ec.ID = ctrl.ID
+	ec.Name = ctrl.Name
+	ec.Type = ctrl.Type
+	ec.Description = ctrl.Description
+
+	var ci models.ControllerInstance
+	db.Where("controller_id = ?", ctrl.ID).Where("deleted_at is null").First(&ci)
+
+	ec.FirmwareID = ci.FirmwareID
+
+	var carControllers []models.CarController
+	db.Where("controller_instance_id = ?", ci.ID).Where("deleted_at is null").Find(&carControllers)
+
+	if len(carControllers) > 0 {
+		var car models.Car
+		db.First(&car, carControllers[0].CarID)
+
+		ec.Vin = &car.Vin
+	}
+
+	return ec
 }
