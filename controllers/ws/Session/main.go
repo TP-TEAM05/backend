@@ -114,10 +114,13 @@ func (w WsSessionController) Start(req []byte) wsservice.WsResponse[interface{}]
 
 	db.Save(&session)
 
+	var s models.Session
+	db.Preload("Cars").First(&s, session.ID)
+
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "session",
-		Endpoint:  "update",
-		Body:      session,
+		Endpoint:  "start",
+		Body:      s,
 	}
 }
 func (w WsSessionController) End(req []byte) wsservice.WsResponse[interface{}] {
@@ -140,10 +143,13 @@ func (w WsSessionController) End(req []byte) wsservice.WsResponse[interface{}] {
 
 	db.Save(&session)
 
+	var s models.Session
+	db.Preload("Cars").First(&s, session.ID)
+
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "session",
-		Endpoint:  "update",
-		Body:      session,
+		Endpoint:  "end",
+		Body:      s,
 	}
 }
 func (w WsSessionController) Delete(req []byte) wsservice.WsResponse[interface{}] {
