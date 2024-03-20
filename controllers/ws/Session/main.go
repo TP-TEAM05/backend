@@ -55,54 +55,88 @@ func (w WsSessionController) Create(req []byte) wsservice.WsResponse[interface{}
 	var session models.Session
 
 	session.Name = Req.Body.Name
-	session.Cars = cars
-
 	db.Create(&session)
 
-	var cis []models.ControllerInstance
-	db.Where("car_id IN ?", Req.Body.Cars).Find(&cis)
-
-	var cscs []models.CarSessionController
-	for _, ci := range cis {
-		var csc models.CarSessionController
-		csc.CarSessionID = session.ID
-		csc.ControllerInstanceID = ci.ID
-		cscs = append(cscs, csc)
+	var carSessions []models.CarSession
+	var carIds []uint
+	for _, car := range cars {
+		var cs models.CarSession
+		cs.CarID = car.ID
+		cs.SessionID = session.ID
+		carSessions = append(carSessions, cs)
+		carIds = append(carIds, car.ID)
 	}
-	db.Create(&cscs)
+	db.Create(&carSessions)
+
+	var carControllers []models.CarController
+	db.Where("car_id IN ?", carIds).Where("deleted_at IS NULL").Find(&carControllers)
+
+	var carSessionControllers []models.CarSessionController
+	for _, carController := range carControllers {
+		var csc models.CarSessionController
+		for _, carSession := range carSessions {
+			if carSession.CarID == carController.CarID {
+				csc.CarSessionID = carSession.ID
+			}
+		}
+		csc.ControllerInstanceID = carController.ControllerInstanceID
+		carSessionControllers = append(carSessionControllers, csc)
+	}
+	db.Create(&carSessionControllers)
+
+	var s models.Session
+	db.Preload("Cars").First(&s, session.ID)
 
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "session",
 		Endpoint:  "create",
-		Body:      session,
+		Body:      s,
 	}
 
 }
-func (w WsSessionController) Update(req []byte) wsservice.WsResponse[interface{}] {
+func (w WsSessionController) Start(req []byte) wsservice.WsResponse[interface{}] {
 	type Body struct {
-		ID        uint       `json:"id"`
-		Cars      []string   `json:"cars"`
-		Name      string     `json:"name"`
-		StartedAt *time.Time `json:"started_at"`
-		EndedAt   *time.Time `json:"ended_at"`
+		ID uint `json:"id"`
 	}
 
 	var Req wsservice.WsRequestPrepared[Body]
 
 	Req.Parse(req)
 
-	var cars []models.Car
-
 	db := database.GetDB()
-	db.Where("vin IN ?", Req.Body.Cars).Find(&cars)
 
 	var session models.Session
 	db.First(&session, Req.Body.ID)
 
-	session.Name = Req.Body.Name
-	session.Cars = cars
-	session.StartedAt = Req.Body.StartedAt
-	session.EndedAt = Req.Body.EndedAt
+	var timenow = time.Now()
+
+	session.StartedAt = &timenow
+
+	db.Save(&session)
+
+	return wsservice.WsResponse[interface{}]{
+		Namespace: "session",
+		Endpoint:  "update",
+		Body:      session,
+	}
+}
+func (w WsSessionController) End(req []byte) wsservice.WsResponse[interface{}] {
+	type Body struct {
+		ID uint `json:"id"`
+	}
+
+	var Req wsservice.WsRequestPrepared[Body]
+
+	Req.Parse(req)
+
+	db := database.GetDB()
+
+	var session models.Session
+	db.First(&session, Req.Body.ID)
+
+	var timenow = time.Now()
+
+	session.EndedAt = &timenow
 
 	db.Save(&session)
 
