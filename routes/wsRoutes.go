@@ -50,6 +50,7 @@ func SetupWs(m *wsservice.ClientManager) {
 	r.Register("session", "get", SessionController.Get)
 	r.Register("session", "list", SessionController.List)
 	r.Register("session", "create", SessionController.Create)
-	r.Register("session", "update", SessionController.Update)
+	r.Register("session", "start", SessionController.Start)
+	r.Register("session", "end", SessionController.End)
 	r.Register("session", "delete", SessionController.Delete)
 }
