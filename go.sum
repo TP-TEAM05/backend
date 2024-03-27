@@ -2,6 +2,14 @@ github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 h1:L/gRVlceqvL25
 github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
 github.com/Microsoft/go-winio v0.6.1 h1:9/kr64B9VUZrLm5YYwbGtUJnMgqWVOdUAXu6Migciow=
 github.com/Microsoft/go-winio v0.6.1/go.mod h1:LRdKpFKfdobln8UmuiYcKPot9D2v6svN5+sAH+4kjUM=
+github.com/ReCoFIIT/integration-api v1.0.1 h1:l8IPwEXLHXZHaq1UCjcDIevelNQAqXji2cHMeLYxF/Q=
+github.com/ReCoFIIT/integration-api v1.0.1/go.mod h1:UT/7uldNY8mg89BnzGwl5bAs++WPvtIoQAA+Sm9bZho=
+github.com/ReCoFIIT/integration-api v1.0.2 h1:8DD5vGX1mWu3asGT4Prqv1cRp8FPURkv3FfY9ziJPR0=
+github.com/ReCoFIIT/integration-api v1.0.2/go.mod h1:UT/7uldNY8mg89BnzGwl5bAs++WPvtIoQAA+Sm9bZho=
+github.com/ReCoFIIT/integration-api v1.0.3 h1:T47T754uaJF2+Dd0QCnslIZ1jSUx319GjQTAslQOPPk=
+github.com/ReCoFIIT/integration-api v1.0.3/go.mod h1:UT/7uldNY8mg89BnzGwl5bAs++WPvtIoQAA+Sm9bZho=
+github.com/ReCoFIIT/integration-api v1.0.4 h1:7ozZetNEU7GiwNsn39BK+sl6miPEGcyejOmSpqp9fZs=
+github.com/ReCoFIIT/integration-api v1.0.4/go.mod h1:UT/7uldNY8mg89BnzGwl5bAs++WPvtIoQAA+Sm9bZho=
 github.com/bsm/ginkgo/v2 v2.12.0 h1:Ny8MWAHyOepLGlLKYmXG4IEkioBysk6GpaRTLC8zwWs=
 github.com/bsm/ginkgo/v2 v2.12.0/go.mod h1:SwYbGRRDovPVboqFv0tPTcG1sN61LM1Z4ARdbAV9g4c=
 github.com/bsm/gomega v1.27.10 h1:yeMWxP2pV2fG3FgAODIY8EiRE3dy0aeFYt4l7wh6yKA=

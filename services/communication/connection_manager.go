@@ -3,9 +3,9 @@ package communication
 import (
 	"fmt"
 	_ "net/http/pprof"
-	"recofiit/models"
 	"time"
 
+	api "github.com/ReCoFIIT/integration-api"
 	"github.com/jftuga/geodist"
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -13,11 +13,11 @@ import (
 // Keeps the connection with Integration module alive and ensures there is a connection
 func sendKeepAlives(connection *IntegrationModuleConnection, interval float32) {
 	for {
-		var datagram models.IDatagram
+		var datagram api.IDatagram
 
 		// Connect
-		datagram = &models.ConnectDatagram{
-			BaseDatagram: models.BaseDatagram{Type: "connect"},
+		datagram = &api.ConnectDatagram{
+			BaseDatagram: api.BaseDatagram{Type: "connect"},
 		}
 
 		acknowledged := connection.WriteAcknowledgedDatagram(datagram, 3, true)
@@ -29,8 +29,8 @@ func sendKeepAlives(connection *IntegrationModuleConnection, interval float32) {
 		// Start sending keep-alives
 		for range time.Tick(time.Second * time.Duration(interval)) {
 			// Keep Alive
-			datagram = &models.KeepAliveDatagram{
-				BaseDatagram: models.BaseDatagram{Type: "keepalive"},
+			datagram = &api.KeepAliveDatagram{
+				BaseDatagram: api.BaseDatagram{Type: "keepalive"},
 			}
 
 			acknowledged = connection.WriteAcknowledgedDatagram(datagram, 3, true)
@@ -47,10 +47,10 @@ func maintainSubscription(connection *IntegrationModuleConnection, subscriptionC
 		panic("Connection cannot be nil")
 	}
 
-	var datagram models.IDatagram
+	var datagram api.IDatagram
 
-	datagram = &models.SubscribeDatagram{
-		BaseDatagram: models.BaseDatagram{
+	datagram = &api.SubscribeDatagram{
+		BaseDatagram: api.BaseDatagram{
 			Type: "subscribe",
 		},
 		Content:  subscriptionContent,
@@ -71,7 +71,7 @@ func maintainSubscription(connection *IntegrationModuleConnection, subscriptionC
 		// Check subscription is active
 		for range time.Tick(time.Second * time.Duration(checkInterval)) {
 
-			var lastDatagram models.IDatagram
+			var lastDatagram api.IDatagram
 			switch subscriptionContent {
 			case "vehicles":
 				if connection.LastOnUpdateVehiclesDatagram != nil {
@@ -87,7 +87,7 @@ func maintainSubscription(connection *IntegrationModuleConnection, subscriptionC
 				break
 			}
 
-			lastUpdateTime, err := time.Parse(models.TimestampFormat, lastDatagram.GetTimestamp())
+			lastUpdateTime, err := time.Parse(api.TimestampFormat, lastDatagram.GetTimestamp())
 			if err != nil {
 				break
 			}
@@ -128,16 +128,16 @@ func simulateNotifications(connection *IntegrationModuleConnection, notification
 							level = "danger"
 						}
 
-						datagram := &models.HeadCollisionNotifyDatagram{
-							NotifyDatagram: models.NotifyDatagram{
-								BaseDatagram: models.BaseDatagram{
+						datagram := &api.HeadCollisionNotifyDatagram{
+							NotifyDatagram: api.NotifyDatagram{
+								BaseDatagram: api.BaseDatagram{
 									Type: "notify",
 								},
 								VehicleVin:  vehicleA.Vin,
 								Level:       level,
 								ContentType: "head_collision",
 							},
-							Content: models.HeadCollisionNotificationContent{
+							Content: api.HeadCollisionNotificationContent{
 								TargetVehicleVin:     vehicleB.Vin,
 								TimeToCollision:      float32(metersDistance / 100.0),
 								MaxSpeedExceededBy:   10,
@@ -146,16 +146,16 @@ func simulateNotifications(connection *IntegrationModuleConnection, notification
 						}
 						connection.WriteAcknowledgedDatagram(datagram, 2, true)
 
-						datagram = &models.HeadCollisionNotifyDatagram{
-							NotifyDatagram: models.NotifyDatagram{
-								BaseDatagram: models.BaseDatagram{
+						datagram = &api.HeadCollisionNotifyDatagram{
+							NotifyDatagram: api.NotifyDatagram{
+								BaseDatagram: api.BaseDatagram{
 									Type: "notify",
 								},
 								VehicleVin:  vehicleB.Vin,
 								Level:       level,
 								ContentType: "head_collision",
 							},
-							Content: models.HeadCollisionNotificationContent{
+							Content: api.HeadCollisionNotificationContent{
 								TargetVehicleVin:     vehicleA.Vin,
 								TimeToCollision:      float32(metersDistance / 100.0),
 								MaxSpeedExceededBy:   10,
@@ -176,16 +176,16 @@ func simulateNotifications(connection *IntegrationModuleConnection, notification
 							level = "danger"
 						}
 
-						datagram := &models.ChainCollisionNotifyDatagram{
-							NotifyDatagram: models.NotifyDatagram{
-								BaseDatagram: models.BaseDatagram{
+						datagram := &api.ChainCollisionNotifyDatagram{
+							NotifyDatagram: api.NotifyDatagram{
+								BaseDatagram: api.BaseDatagram{
 									Type: "notify",
 								},
 								VehicleVin:  vehicleA.Vin,
 								Level:       level,
 								ContentType: "chain_collision",
 							},
-							Content: models.ChainCollisionNotificationContent{
+							Content: api.ChainCollisionNotificationContent{
 								TargetVehicleVin:    vehicleB.Vin,
 								CurrentDistance:     float32(metersDistance),
 								RecommendedDistance: SafeDistance,
@@ -193,16 +193,16 @@ func simulateNotifications(connection *IntegrationModuleConnection, notification
 						}
 						connection.WriteAcknowledgedDatagram(datagram, 2, true)
 
-						datagram = &models.ChainCollisionNotifyDatagram{
-							NotifyDatagram: models.NotifyDatagram{
-								BaseDatagram: models.BaseDatagram{
+						datagram = &api.ChainCollisionNotifyDatagram{
+							NotifyDatagram: api.NotifyDatagram{
+								BaseDatagram: api.BaseDatagram{
 									Type: "notify",
 								},
 								VehicleVin:  vehicleB.Vin,
 								Level:       level,
 								ContentType: "chain_collision",
 							},
-							Content: models.ChainCollisionNotificationContent{
+							Content: api.ChainCollisionNotificationContent{
 								TargetVehicleVin:    vehicleA.Vin,
 								CurrentDistance:     float32(metersDistance),
 								RecommendedDistance: SafeDistance,
@@ -221,16 +221,16 @@ func simulateNotifications(connection *IntegrationModuleConnection, notification
 							level = "danger"
 						}
 
-						datagram := &models.CrossroadNotifyDatagram{
-							NotifyDatagram: models.NotifyDatagram{
-								BaseDatagram: models.BaseDatagram{
+						datagram := &api.CrossroadNotifyDatagram{
+							NotifyDatagram: api.NotifyDatagram{
+								BaseDatagram: api.BaseDatagram{
 									Type: "notify",
 								},
 								VehicleVin:  vehicleA.Vin,
 								Level:       level,
 								ContentType: "crossroad",
 							},
-							Content: models.CrossroadNotificationContent{
+							Content: api.CrossroadNotificationContent{
 								Text:       "Pojdeš prvý.",
 								Order:      1,
 								RightOfWay: true,
@@ -238,16 +238,16 @@ func simulateNotifications(connection *IntegrationModuleConnection, notification
 						}
 						connection.WriteAcknowledgedDatagram(datagram, 2, true)
 
-						datagram = &models.CrossroadNotifyDatagram{
-							NotifyDatagram: models.NotifyDatagram{
-								BaseDatagram: models.BaseDatagram{
+						datagram = &api.CrossroadNotifyDatagram{
+							NotifyDatagram: api.NotifyDatagram{
+								BaseDatagram: api.BaseDatagram{
 									Type: "notify",
 								},
 								VehicleVin:  vehicleB.Vin,
 								Level:       level,
 								ContentType: "crossroad",
 							},
-							Content: models.CrossroadNotificationContent{
+							Content: api.CrossroadNotificationContent{
 								Text:       "Pojdeš druhý.",
 								Order:      2,
 								RightOfWay: false,
@@ -266,31 +266,31 @@ func simulateNotifications(connection *IntegrationModuleConnection, notification
 							level = "danger"
 						}
 
-						datagram := &models.GenericNotifyDatagram{
-							NotifyDatagram: models.NotifyDatagram{
-								BaseDatagram: models.BaseDatagram{
+						datagram := &api.GenericNotifyDatagram{
+							NotifyDatagram: api.NotifyDatagram{
+								BaseDatagram: api.BaseDatagram{
 									Type: "notify",
 								},
 								VehicleVin:  vehicleA.Vin,
 								Level:       level,
 								ContentType: "generic",
 							},
-							Content: models.GenericNotificationContent{
+							Content: api.GenericNotificationContent{
 								Text: "Prajeme príjemnú jazdu.",
 							},
 						}
 						connection.WriteAcknowledgedDatagram(datagram, 2, true)
 
-						datagram = &models.GenericNotifyDatagram{
-							NotifyDatagram: models.NotifyDatagram{
-								BaseDatagram: models.BaseDatagram{
+						datagram = &api.GenericNotifyDatagram{
+							NotifyDatagram: api.NotifyDatagram{
+								BaseDatagram: api.BaseDatagram{
 									Type: "notify",
 								},
 								VehicleVin:  vehicleB.Vin,
 								Level:       level,
 								ContentType: "generic",
 							},
-							Content: models.GenericNotificationContent{
+							Content: api.GenericNotificationContent{
 								Text: "Prajeme príjemnú jazdu.",
 							},
 						}

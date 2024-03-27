@@ -3,9 +3,11 @@ package dataLogging
 import (
 	"recofiit/models"
 	"time"
+
+	api "github.com/ReCoFIIT/integration-api"
 )
 
-func LogData(datagram models.UpdateVehicleDatagram) {
+func LogData(datagram api.UpdateVehicleDatagram) {
 	var carController = NewCarController()
 	var measurementController = NewMeasurementController()
 
