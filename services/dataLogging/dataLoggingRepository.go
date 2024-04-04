@@ -2,19 +2,27 @@ package dataLogging
 
 import (
 	"recofiit/models"
+	"recofiit/services/database"
 	"time"
 
 	api "github.com/ReCoFIIT/integration-api"
 )
 
+
 func LogData(datagram api.UpdateVehicleDatagram) {
 	var carController = NewCarController()
+
 	var measurementController = NewMeasurementController()
 
-	carSessionID, err := carController.CreateSessionAndCarSession(1, "Test Session")
-	if err != nil {
-		panic("Failed to create session and car session")
+	db := database.GetDB()
+	var session models.Session
+	result := db.Where("started_at is not null").Where("ended_at is null").First(&session)
+
+	if result.Error != nil {
+		panic("Failed to find started session")
 	}
+
+	var carSessionID = session.ID
 
 	SaveMeasurement(*measurementController, carSessionID, "GPS_LOCATION", datagram.Vehicle.Latitude, &datagram.Vehicle.Longitude)
 	SaveMeasurement(*measurementController, carSessionID, "GPS_DIRECTION", datagram.Vehicle.GpsDirection, nil)
