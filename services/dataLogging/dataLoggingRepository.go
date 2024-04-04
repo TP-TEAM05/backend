@@ -4,9 +4,14 @@ import (
 	"recofiit/models"
 	"recofiit/services/database"
 	"time"
+
+	api "github.com/ReCoFIIT/integration-api"
 )
 
-func LogData(datagram models.UpdateVehicleDatagram) {
+
+func LogData(datagram api.UpdateVehicleDatagram) {
+	var carController = NewCarController()
+
 	var measurementController = NewMeasurementController()
 
 	db := database.GetDB()
