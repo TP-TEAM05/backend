@@ -3,15 +3,13 @@ package dataLogging
 import (
 	"recofiit/models"
 	"recofiit/services/database"
+	"strconv"
 	"time"
 
 	api "github.com/ReCoFIIT/integration-api"
 )
 
-
 func LogData(datagram api.UpdateVehicleDatagram) {
-	var carController = NewCarController()
-
 	var measurementController = NewMeasurementController()
 
 	db := database.GetDB()
@@ -22,7 +20,33 @@ func LogData(datagram api.UpdateVehicleDatagram) {
 		panic("Failed to find started session")
 	}
 
-	var carSessionID = session.ID
+	var car models.Car
+	result = db.Where("vin", datagram.Vehicle.Vin).Where("deleted_at is null").First(&car)
+	if result.Error != nil {
+		var count int64
+
+		db.Model(&models.Car{}).Count(&count)
+
+		car = models.Car{
+			Vin:   datagram.Vehicle.Vin,
+			Name:  "Car " + strconv.FormatInt(count+1, 10),
+			Color: "#" + datagram.Vehicle.Vin[:6],
+		}
+		db.Create(&car)
+	}
+
+	var carSession models.CarSession
+	result = db.Where("car_id", car.ID).Where("session_id", session.ID).Where("deleted_at is null").First(&carSession)
+
+	if result.Error != nil {
+		carSession = models.CarSession{
+			CarID:     car.ID,
+			SessionID: session.ID,
+		}
+		db.Create(&carSession)
+	}
+
+	var carSessionID = carSession.ID
 
 	SaveMeasurement(*measurementController, carSessionID, "GPS_LOCATION", datagram.Vehicle.Latitude, &datagram.Vehicle.Longitude)
 	SaveMeasurement(*measurementController, carSessionID, "GPS_DIRECTION", datagram.Vehicle.GpsDirection, nil)
