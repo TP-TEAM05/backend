@@ -1,7 +1,6 @@
 package dataLogging
 
 import (
-	"fmt"
 	"recofiit/models"
 	"recofiit/services/database"
 	"time"
@@ -23,7 +22,6 @@ func LogData(datagram api.UpdateVehicleDatagram) {
 	var count int64
 	db.Model(&models.Car{}).Where("vin", datagram.Vehicle.Vin).Where("deleted_at is null").Count(&count)
 
-	fmt.Println(count)
 	var car models.Car
 	if count == 0 {
 		car.Vin = datagram.Vehicle.Vin
