@@ -1,9 +1,9 @@
 package dataLogging
 
 import (
+	"fmt"
 	"recofiit/models"
 	"recofiit/services/database"
-	"strconv"
 	"time"
 
 	api "github.com/ReCoFIIT/integration-api"
@@ -20,30 +20,32 @@ func LogData(datagram api.UpdateVehicleDatagram) {
 		panic("Failed to find started session")
 	}
 
+	var count int64
+	db.Model(&models.Car{}).Where("vin", datagram.Vehicle.Vin).Where("deleted_at is null").Count(&count)
+
+	fmt.Println(count)
 	var car models.Car
-	result = db.Where("vin", datagram.Vehicle.Vin).Where("deleted_at is null").First(&car)
-	if result.Error != nil {
-		var count int64
+	if count == 0 {
+		car.Vin = datagram.Vehicle.Vin
+		car.Name = "Car"
+		car.Color = "#ff0000"
 
-		db.Model(&models.Car{}).Count(&count)
-
-		car = models.Car{
-			Vin:   datagram.Vehicle.Vin,
-			Name:  "Car " + strconv.FormatInt(count+1, 10),
-			Color: "#" + datagram.Vehicle.Vin[:6],
-		}
 		db.Create(&car)
+	} else {
+		db.Where("vin = ?", datagram.Vehicle.Vin).Where("deleted_at is null").First(&car)
 	}
 
 	var carSession models.CarSession
-	result = db.Where("car_id", car.ID).Where("session_id", session.ID).Where("deleted_at is null").First(&carSession)
+	db.Model(&models.CarSession{}).Where("car_id", car.ID).Where("session_id", session.ID).Where("deleted_at is null").Count(&count)
 
-	if result.Error != nil {
+	if count == 0 {
 		carSession = models.CarSession{
 			CarID:     car.ID,
 			SessionID: session.ID,
 		}
 		db.Create(&carSession)
+	} else {
+		db.Where("car_id", car.ID).Where("session_id", session.ID).Where("deleted_at is null").First(&carSession)
 	}
 
 	var carSessionID = carSession.ID
