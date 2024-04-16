@@ -15,9 +15,9 @@ func (r *MeasurementController) InsertMeasurement(measurement models.Measurement
 	return database.GetDB().Create(&measurement).Error
 }
 
-func (r *MeasurementController) GetSensorID(name string, sensorType string) (uint, error) {
+func (r *MeasurementController) GetSensorID(controllerInstanceIDs []uint, sensorType string) (uint, error) {
 	var sensor models.Sensor
-	if err := database.GetDB().Where("name = ? AND sensor_type = ?", name, sensorType).First(&sensor).Error; err != nil {
+	if err := database.GetDB().Where("controller_instance_id in ? AND sensor_type = ?", controllerInstanceIDs, sensorType).First(&sensor).Error; err != nil {
 		return 0, err
 	}
 	return sensor.ID, nil

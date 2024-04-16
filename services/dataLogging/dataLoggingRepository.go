@@ -48,19 +48,69 @@ func LogData(datagram api.UpdateVehicleDatagram) {
 
 	var carSessionID = carSession.ID
 
-	SaveMeasurement(*measurementController, carSessionID, "GPS_LOCATION", datagram.Vehicle.Latitude, &datagram.Vehicle.Longitude)
-	SaveMeasurement(*measurementController, carSessionID, "GPS_DIRECTION", datagram.Vehicle.GpsDirection, nil)
-	SaveMeasurement(*measurementController, carSessionID, "FRONT_ULTRASONIC", datagram.Vehicle.FrontUltrasonic, nil)
-	SaveMeasurement(*measurementController, carSessionID, "REAR_ULTRASONIC", datagram.Vehicle.RearUltrasonic, nil)
-	SaveMeasurement(*measurementController, carSessionID, "FRONT_LIDAR", datagram.Vehicle.FrontLidar, nil)
-	SaveMeasurement(*measurementController, carSessionID, "SPEED_FRONT_LEFT", datagram.Vehicle.SpeedFrontLeft, nil)
-	SaveMeasurement(*measurementController, carSessionID, "SPEED_FRONT_RIGHT", datagram.Vehicle.SpeedFrontRight, nil)
-	SaveMeasurement(*measurementController, carSessionID, "SPEED_REAR_LEFT", datagram.Vehicle.SpeedRearLeft, nil)
-	SaveMeasurement(*measurementController, carSessionID, "SPEED_REAR_RIGHT", datagram.Vehicle.SpeedRearRight, nil)
+	var controllerInstanceIDs []uint
+
+	db.Model(&models.CarSessionController{}).Where("car_session_id", carSessionID).Where("deleted_at is null").Count(&count)
+	if count == 0 {
+		var controller = models.Controller{
+			Name: "Controller",
+			Type: "Base Controller",
+		}
+		db.Create(&controller)
+
+		var firmware models.Firmware
+		db.Order("id desc").First(&firmware)
+
+		var controllerInstance = models.ControllerInstance{
+			FirmwareID:   firmware.ID,
+			ControllerID: controller.ID,
+		}
+		db.Create(&controllerInstance)
+		controllerInstanceIDs = []uint{controllerInstance.ID}
+
+		var carController = models.CarController{
+			CarID:                car.ID,
+			ControllerInstanceID: controllerInstance.ID,
+		}
+		db.Create(&carController)
+
+		var carSessionController = models.CarSessionController{
+			CarSessionID:         carSessionID,
+			ControllerInstanceID: controllerInstance.ID,
+		}
+		db.Create(&carSessionController)
+
+		for _, sensorType := range models.SensorTypes {
+			var sensor = models.Sensor{
+				ControllerInstanceID: controllerInstance.ID,
+				Name:                 "BaseSensor",
+				SensorType:           sensorType,
+			}
+			db.Create(&sensor)
+		}
+	} else {
+		var carSessionController []models.CarSessionController
+		db.Where("car_session_id", carSessionID).Where("deleted_at is null").Find(&carSessionController)
+
+		controllerInstanceIDs := make([]uint, 0, len(carSessionController))
+		for _, csc := range carSessionController {
+			controllerInstanceIDs = append(controllerInstanceIDs, csc.ControllerInstanceID)
+		}
+	}
+
+	SaveMeasurement(*measurementController, carSessionID, controllerInstanceIDs, "GPS_LOCATION", datagram.Vehicle.Latitude, &datagram.Vehicle.Longitude)
+	SaveMeasurement(*measurementController, carSessionID, controllerInstanceIDs, "GPS_DIRECTION", datagram.Vehicle.GpsDirection, nil)
+	SaveMeasurement(*measurementController, carSessionID, controllerInstanceIDs, "FRONT_ULTRASONIC", datagram.Vehicle.FrontUltrasonic, nil)
+	SaveMeasurement(*measurementController, carSessionID, controllerInstanceIDs, "REAR_ULTRASONIC", datagram.Vehicle.RearUltrasonic, nil)
+	SaveMeasurement(*measurementController, carSessionID, controllerInstanceIDs, "FRONT_LIDAR", datagram.Vehicle.FrontLidar, nil)
+	SaveMeasurement(*measurementController, carSessionID, controllerInstanceIDs, "SPEED_FRONT_LEFT", datagram.Vehicle.SpeedFrontLeft, nil)
+	SaveMeasurement(*measurementController, carSessionID, controllerInstanceIDs, "SPEED_FRONT_RIGHT", datagram.Vehicle.SpeedFrontRight, nil)
+	SaveMeasurement(*measurementController, carSessionID, controllerInstanceIDs, "SPEED_REAR_LEFT", datagram.Vehicle.SpeedRearLeft, nil)
+	SaveMeasurement(*measurementController, carSessionID, controllerInstanceIDs, "SPEED_REAR_RIGHT", datagram.Vehicle.SpeedRearRight, nil)
 }
 
-func SaveMeasurement(measurementController MeasurementController, carSessionID uint, sensorName string, data1 float32, data2 *float32) {
-	sensorID, err := measurementController.GetSensorID("BaseSensor", sensorName)
+func SaveMeasurement(measurementController MeasurementController, carSessionID uint, controllerInstanceIDs []uint, sensorType string, data1 float32, data2 *float32) {
+	sensorID, err := measurementController.GetSensorID(controllerInstanceIDs, sensorType)
 	if err != nil {
 		return
 	}
