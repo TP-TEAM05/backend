@@ -44,7 +44,7 @@ func (w WsCarController) List(req []byte) wsservice.WsResponse[interface{}] {
 	var cars []models.Car
 	db.Find(&cars)
 
-	var ecs = make([]ExtendedCar, len(cars))
+	var ecs = make([]ExtendedCar, 0)
 	for _, c := range cars {
 		ecs = append(ecs, w.ExtendCar(c, db))
 	}
@@ -82,9 +82,11 @@ func (w WsCarController) Create(req []byte) wsservice.WsResponse[interface{}] {
 }
 func (w WsCarController) Update(req []byte) wsservice.WsResponse[interface{}] {
 	type Body struct {
-		Vin   string `json:"vin"`
-		Name  string `json:"name"`
-		Color string `json:"color"`
+		Vin                string `json:"vin"`
+		Name               string `json:"name"`
+		Color              string `json:"color"`
+		IsControlledByUser bool   `json:"is_controlled_by_user"`
+		SessionID          *uint  `json:"session_id"`
 	}
 	var Req wsservice.WsRequestPrepared[Body]
 
@@ -99,6 +101,13 @@ func (w WsCarController) Update(req []byte) wsservice.WsResponse[interface{}] {
 	car.Color = Req.Body.Color
 
 	db.Save(&car)
+
+	if Req.Body.SessionID != nil {
+		var carSession models.CarSession
+		db.Where("session_id = ?", *Req.Body.SessionID).Where("car_id", car.ID).First(&carSession)
+		carSession.IsControlledByUser = Req.Body.IsControlledByUser
+		db.Save(&carSession)
+	}
 
 	return wsservice.WsResponse[interface{}]{
 		Namespace: "car",
