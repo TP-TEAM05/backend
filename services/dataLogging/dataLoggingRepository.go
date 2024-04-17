@@ -24,12 +24,14 @@ func LogData(datagram api.UpdateVehicleDatagram) {
 
 	var car models.Car
 	if count == 0 {
+		// create new car
 		car.Vin = datagram.Vehicle.Vin
 		car.Name = "Car"
 		car.Color = "#ff0000"
 
 		db.Create(&car)
 	} else {
+		// find existing car
 		db.Where("vin = ?", datagram.Vehicle.Vin).Where("deleted_at is null").First(&car)
 	}
 
@@ -37,12 +39,14 @@ func LogData(datagram api.UpdateVehicleDatagram) {
 	db.Model(&models.CarSession{}).Where("car_id", car.ID).Where("session_id", session.ID).Where("deleted_at is null").Count(&count)
 
 	if count == 0 {
+		// create new car-session
 		carSession = models.CarSession{
 			CarID:     car.ID,
 			SessionID: session.ID,
 		}
 		db.Create(&carSession)
 	} else {
+		// find existing car-session
 		db.Where("car_id", car.ID).Where("session_id", session.ID).Where("deleted_at is null").First(&carSession)
 	}
 
@@ -52,43 +56,59 @@ func LogData(datagram api.UpdateVehicleDatagram) {
 
 	db.Model(&models.CarSessionController{}).Where("car_session_id", carSessionID).Where("deleted_at is null").Count(&count)
 	if count == 0 {
-		var controller = models.Controller{
-			Name: "Controller",
-			Type: "Base Controller",
-		}
-		db.Create(&controller)
+		// no car controller is registered for the given session -> add new
+		var carController models.CarController
+		var controllerInstance models.ControllerInstance
+		result := db.Where("car_id", car.ID).Where("deleted_at is null").First(&carController)
+		if result.Error != nil {
+			// no controller exist for the given car -> add new
+			var controller = models.Controller{
+				Name: "Controller",
+				Type: "Base Controller",
+			}
+			db.Create(&controller)
 
-		var firmware models.Firmware
-		db.Order("id desc").First(&firmware)
+			var firmware models.Firmware
+			db.Last(&firmware)
 
-		var controllerInstance = models.ControllerInstance{
-			FirmwareID:   firmware.ID,
-			ControllerID: controller.ID,
+			controllerInstance = models.ControllerInstance{
+				FirmwareID:   firmware.ID,
+				ControllerID: controller.ID,
+			}
+			db.Create(&controllerInstance)
+
+			carController = models.CarController{
+				CarID:                car.ID,
+				ControllerInstanceID: controllerInstance.ID,
+			}
+			db.Create(&carController)
+		} else {
+			// some controller exists on the car
+			db.Where("id", carController.ControllerInstanceID).First(&controllerInstance)
 		}
-		db.Create(&controllerInstance)
 		controllerInstanceIDs = []uint{controllerInstance.ID}
 
-		var carController = models.CarController{
-			CarID:                car.ID,
-			ControllerInstanceID: controllerInstance.ID,
-		}
-		db.Create(&carController)
-
+		// add the controller to this car in the given session
 		var carSessionController = models.CarSessionController{
 			CarSessionID:         carSessionID,
 			ControllerInstanceID: controllerInstance.ID,
 		}
 		db.Create(&carSessionController)
 
-		for _, sensorType := range models.SensorTypes {
-			var sensor = models.Sensor{
-				ControllerInstanceID: controllerInstance.ID,
-				Name:                 "BaseSensor",
-				SensorType:           sensorType,
+		db.Model(&models.Sensor{}).Where("controller_instance_id", controllerInstance.ID).Where("deleted_at is null").Count(&count)
+		if count == 0 {
+			// no sensors are defined -> add new
+			for _, sensorType := range models.SensorTypes {
+				var sensor = models.Sensor{
+					ControllerInstanceID: controllerInstance.ID,
+					Name:                 "BaseSensor",
+					SensorType:           sensorType,
+				}
+				db.Create(&sensor)
 			}
-			db.Create(&sensor)
 		}
 	} else {
+		// some controller is already registered -> use that one
 		var carSessionController []models.CarSessionController
 		db.Where("car_session_id", carSessionID).Where("deleted_at is null").Find(&carSessionController)
 
