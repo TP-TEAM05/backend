@@ -112,7 +112,7 @@ func LogData(datagram api.UpdateVehicleDatagram) {
 		var carSessionController []models.CarSessionController
 		db.Where("car_session_id", carSessionID).Where("deleted_at is null").Find(&carSessionController)
 
-		controllerInstanceIDs := make([]uint, 0, len(carSessionController))
+		controllerInstanceIDs = make([]uint, len(carSessionController))
 		for _, csc := range carSessionController {
 			controllerInstanceIDs = append(controllerInstanceIDs, csc.ControllerInstanceID)
 		}
