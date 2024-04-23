@@ -23,6 +23,11 @@ const (
 	MAGNETOMETER_DIRECTION SensorType = "MAGNETOMETER_DIRECTION"
 )
 
+var SensorTypes = []SensorType{
+	"GPS_LOCATION", "GPS_SPEED", "GPS_DIRECTION", "GPS_ADDITIONAL", "FRONT_ULTRASONIC", "REAR_ULTRASONIC",
+	"FRONT_LIDAR", "SPEED_FRONT_LEFT", "SPEED_FRONT_RIGHT", "SPEED_REAR_LEFT", "SPEED_REAR_RIGHT", "MAGNETOMETER_DIRECTION",
+}
+
 type BaseModel struct {
 	ID        uint           `gorm:"primarykey" json:"id"`
 	CreatedAt time.Time      `json:"created_at"`
