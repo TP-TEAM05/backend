@@ -10,6 +10,8 @@ github.com/ReCoFIIT/integration-api v1.0.3 h1:T47T754uaJF2+Dd0QCnslIZ1jSUx319GjQ
 github.com/ReCoFIIT/integration-api v1.0.3/go.mod h1:UT/7uldNY8mg89BnzGwl5bAs++WPvtIoQAA+Sm9bZho=
 github.com/ReCoFIIT/integration-api v1.0.4 h1:7ozZetNEU7GiwNsn39BK+sl6miPEGcyejOmSpqp9fZs=
 github.com/ReCoFIIT/integration-api v1.0.4/go.mod h1:UT/7uldNY8mg89BnzGwl5bAs++WPvtIoQAA+Sm9bZho=
+github.com/ReCoFIIT/integration-api v1.1.0 h1:LgDDjwrLvBSniiIjGttnISGCC23DpwzBbM5seznJoRo=
+github.com/ReCoFIIT/integration-api v1.1.0/go.mod h1:UT/7uldNY8mg89BnzGwl5bAs++WPvtIoQAA+Sm9bZho=
 github.com/bsm/ginkgo/v2 v2.12.0 h1:Ny8MWAHyOepLGlLKYmXG4IEkioBysk6GpaRTLC8zwWs=
 github.com/bsm/ginkgo/v2 v2.12.0/go.mod h1:SwYbGRRDovPVboqFv0tPTcG1sN61LM1Z4ARdbAV9g4c=
 github.com/bsm/gomega v1.27.10 h1:yeMWxP2pV2fG3FgAODIY8EiRE3dy0aeFYt4l7wh6yKA=
