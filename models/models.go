@@ -115,3 +115,9 @@ type ControllerInstance struct {
 	Firmware     Firmware   `json:"firmware"`
 	Controller   Controller `json:"controller"`
 }
+
+type VehicleConfig struct {
+	Car        Car        `json:"car"`
+	CarSession CarSession `json:"car_session"`
+	Sensors    []Sensor   `json:"sensors"`
+}
