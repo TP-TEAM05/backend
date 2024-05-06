@@ -144,10 +144,10 @@ func (connection *IntegrationModuleConnection) ProcessDatagram(data []byte, safe
 		connection.LastOnUpdateVehiclesDatagram = &updateVehiclesDatagram
 
 		// Send processed data to FE
-		controller := ws_session_namespace.WsSessionController{}
+		//controller := ws_session_namespace.WsSessionController{}
 		// time sleep 10 ms
-		time.Sleep(10 * time.Millisecond)
-		controller.SendLiveSessionData(&updateVehiclesDatagram)
+		//time.Sleep(10 * time.Millisecond)
+		//controller.SendLiveSessionData(&updateVehiclesDatagram)
 
 		select {
 		case connection.OnUpdateVehicles <- updateVehiclesDatagram:

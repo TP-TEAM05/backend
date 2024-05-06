@@ -1,13 +1,22 @@
 package ws_session_namespace
 
 import (
+	api "github.com/ReCoFIIT/integration-api"
 	"recofiit/models"
 	"recofiit/services/database"
+	"recofiit/services/redis"
+	"recofiit/services/statistics"
 	wsservice "recofiit/services/wsService"
 	"strconv"
 )
 
-func (w WsSessionController) SendLiveSessionData(data interface{}) {
+type ExtendedUpdateVehicleDatagram struct {
+	api.BaseDatagram
+	Vehicle api.UpdateVehicleVehicle `json:"vehicle"`
+	Network statistics.NetworkStats  `json:"network"`
+}
+
+func (w WsSessionController) SendLiveSessionData(data *api.UpdateVehicleDatagram) {
 
 	db := database.GetDB()
 	var session models.Session
@@ -16,13 +25,23 @@ func (w WsSessionController) SendLiveSessionData(data interface{}) {
 	if result.Error != nil {
 		panic("Failed to find started session")
 	}
-	
+
+	var dataExtended = &ExtendedUpdateVehicleDatagram{
+		BaseDatagram: api.BaseDatagram{
+			Index:     data.Index,
+			Type:      data.Type,
+			Timestamp: data.Timestamp,
+		},
+		Vehicle: data.Vehicle,
+		Network: *redis.GetNetworkStats(data.Vehicle.Vin),
+	}
+
 	var carSessionID = session.ID
 
 	endpointResponse := wsservice.WsResponse[interface{}]{
 		Namespace: "session",
 		Endpoint:  "live/" + strconv.Itoa(int(carSessionID)),
-		Body:      data,
+		Body:      dataExtended,
 	}
 
 	res := endpointResponse.ToJSON()

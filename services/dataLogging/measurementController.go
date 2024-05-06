@@ -15,10 +15,12 @@ func (r *MeasurementController) InsertMeasurement(measurement models.Measurement
 	return database.GetDB().Create(&measurement).Error
 }
 
-func (r *MeasurementController) GetSensorID(controllerInstanceIDs []uint, sensorType string) (uint, error) {
-	var sensor models.Sensor
-	if err := database.GetDB().Where("controller_instance_id in ? AND sensor_type = ?", controllerInstanceIDs, sensorType).First(&sensor).Error; err != nil {
-		return 0, err
+func (r *MeasurementController) GetSensorID(sensors []models.Sensor, sensorType models.SensorType) *uint {
+	for _, sensor := range sensors {
+		if sensor.SensorType == sensorType {
+			return &sensor.ID
+		}
 	}
-	return sensor.ID, nil
+
+	return nil
 }
