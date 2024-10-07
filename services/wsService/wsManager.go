@@ -3,8 +3,9 @@ package wsservice
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/websocket"
 	"recofiit/utils"
+
+	"github.com/gorilla/websocket"
 )
 
 type Client struct {
@@ -77,8 +78,11 @@ func (manager *ClientManager) Start() {
 			if (manager.TotalConnections - manager.ActiveConnections) > 10 {
 				newClientsMap := make(map[*Client]bool)
 				for conn := range manager.Clients {
-					newClientsMap[conn] = true
+					if manager.Clients[conn] {
+						newClientsMap[conn] = true
+					}
 				}
+				manager.Clients = nil
 				manager.Clients = newClientsMap
 				manager.TotalConnections = manager.ActiveConnections
 			}
