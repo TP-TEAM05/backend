@@ -3,6 +3,8 @@ package wsservice
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/getsentry/sentry-go"
 )
 
 type WsRequest[B any] struct {
@@ -41,6 +43,7 @@ func (m *WsRequest[B]) Parse(message []byte) {
 	err := json.Unmarshal([]byte(message), &m)
 
 	if err != nil {
+		sentry.CaptureException(err)
 		fmt.Println("[Error] [WsRequest]:", err)
 	}
 }
@@ -50,6 +53,7 @@ func (r *WsRequestPrepared[B]) Parse(message []byte) {
 	err := json.Unmarshal([]byte(message), &r)
 
 	if err != nil {
+		sentry.CaptureException(err)
 		fmt.Println("[Error] [WsRequestPrepared]:", err)
 	}
 }

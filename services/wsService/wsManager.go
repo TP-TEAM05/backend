@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"recofiit/utils"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/gorilla/websocket"
 )
 
@@ -120,6 +121,7 @@ func (c *Client) Read() {
 	for {
 		_, message, err := c.Socket.ReadMessage()
 		if err != nil {
+			sentry.CaptureException(err)
 			Manager.Unregister <- c
 			_ = c.Socket.Close()
 			break

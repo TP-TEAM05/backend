@@ -4,6 +4,8 @@ import (
 	"recofiit/models"
 	"recofiit/services/database"
 	"time"
+
+	"github.com/getsentry/sentry-go"
 )
 
 type CarController struct{}
@@ -19,10 +21,12 @@ func (c *CarController) CreateSessionAndCarSession(carID uint, sessionName strin
 	if err := database.GetDB().Where("car_id = ?", carID).First(&carSession).Error; err != nil {
 		session, err = c.CreateSession(carID, "Test session")
 		if err != nil {
+			sentry.CaptureException(err)
 			return 0, err
 		}
 		carSession, err = c.CreateCarSession(carID, session.ID)
 		if err != nil {
+			sentry.CaptureException(err)
 			return 0, err
 		}
 	}
@@ -33,6 +37,7 @@ func (c *CarController) CreateCarSession(carID uint, sessionId uint) (models.Car
 	carSession := models.CarSession{CarID: carID, SessionID: sessionId}
 	var err = database.GetDB().Create(&carSession).Error
 	if err != nil {
+		sentry.CaptureException(err)
 		return carSession, err
 	}
 
@@ -47,6 +52,7 @@ func (c *CarController) CreateSession(carID uint, sessionName string) (models.Se
 	}
 	err := database.GetDB().Create(&session).Error
 	if err != nil {
+		sentry.CaptureException(err)
 		return session, err
 	}
 

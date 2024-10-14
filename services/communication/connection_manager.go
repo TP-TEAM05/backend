@@ -6,6 +6,7 @@ import (
 	"time"
 
 	api "github.com/ReCoFIIT/integration-api"
+	"github.com/getsentry/sentry-go"
 	"github.com/jftuga/geodist"
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -89,6 +90,7 @@ func maintainSubscription(connection *IntegrationModuleConnection, subscriptionC
 
 			lastUpdateTime, err := time.Parse(api.TimestampFormat, lastDatagram.GetTimestamp())
 			if err != nil {
+				sentry.CaptureException(err)
 				break
 			}
 			secondsSinceLastUpdate := float32(time.Now().Sub(lastUpdateTime).Seconds())

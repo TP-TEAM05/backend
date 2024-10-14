@@ -5,6 +5,7 @@ import (
 	"net/http"
 	wsservice "recofiit/services/wsService"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	uuid "github.com/satori/go.uuid"
@@ -24,6 +25,7 @@ func WsHandler(c *gin.Context) {
 	//Upgrade the HTTP protocol to the websocket protocol
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
+		sentry.CaptureException(err)
 		http.NotFound(c.Writer, c.Request)
 		return
 	}

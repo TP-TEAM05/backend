@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"net"
 	"os"
+
+	"github.com/getsentry/sentry-go"
 )
 
 func getIPs() []net.IP {
 	ips, err := net.LookupIP("car-integration")
 	if err != nil || len(ips) == 0 {
+		sentry.CaptureException(err)
 		fmt.Printf("Could not resolve or find hostname %v\n", err)
 		os.Exit(1)
 	}

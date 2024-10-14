@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"recofiit/models"
 	"recofiit/services/statistics"
+
+	"github.com/getsentry/sentry-go"
 )
 
 func GetNetworkStats(key string) *statistics.NetworkStats {
@@ -15,6 +17,7 @@ func GetNetworkStats(key string) *statistics.NetworkStats {
 	// Get the serialized data from Redis
 	serialized, err := db.Get(ctx, key).Result()
 	if err != nil {
+		sentry.CaptureException(err)
 		fmt.Println("Error getting NetworkStats from Redis:", err)
 		return nil
 	}
@@ -23,6 +26,7 @@ func GetNetworkStats(key string) *statistics.NetworkStats {
 	stats := &statistics.NetworkStats{}
 	err = json.Unmarshal([]byte(serialized), stats)
 	if err != nil {
+		sentry.CaptureException(err)
 		fmt.Println("Error deserializing NetworkStats:", err)
 		return nil
 	}
@@ -37,6 +41,7 @@ func SaveNetworkStats(key string, stats *statistics.NetworkStats) error {
 	// Serialize the stats to JSON for storing
 	serialized, err := json.Marshal(stats)
 	if err != nil {
+		sentry.CaptureException(err)
 		fmt.Println("Error serializing NetworkStats:", err)
 		return err
 	}
@@ -44,6 +49,7 @@ func SaveNetworkStats(key string, stats *statistics.NetworkStats) error {
 	// Save the serialized data to Redis
 	err = db.Set(ctx, key, serialized, 0).Err()
 	if err != nil {
+		sentry.CaptureException(err)
 		fmt.Println("Error saving NetworkStats to Redis:", err)
 		return err
 	}
@@ -58,6 +64,7 @@ func GetVehicleConfig(key string) *models.VehicleConfig {
 	// Get the serialized data from Redis
 	serialized, err := db.Get(ctx, key).Result()
 	if err != nil {
+		sentry.CaptureException(err)
 		fmt.Println("Error getting VehicleConfig from Redis:", err)
 		return nil
 	}
@@ -66,6 +73,7 @@ func GetVehicleConfig(key string) *models.VehicleConfig {
 	config := &models.VehicleConfig{}
 	err = json.Unmarshal([]byte(serialized), config)
 	if err != nil {
+		sentry.CaptureException(err)
 		fmt.Println("Error deserializing VehicleConfig:", err)
 		return nil
 	}
@@ -79,6 +87,7 @@ func SaveVehicleConfig(key string, config *models.VehicleConfig) error {
 
 	serialized, err := json.Marshal(config)
 	if err != nil {
+		sentry.CaptureException(err)
 		fmt.Println("Error serializing VehicleConfig:", err)
 		return err
 	}
@@ -86,6 +95,7 @@ func SaveVehicleConfig(key string, config *models.VehicleConfig) error {
 	// Save the serialized data to Redis
 	err = db.Set(ctx, key, serialized, 0).Err()
 	if err != nil {
+		sentry.CaptureException(err)
 		fmt.Println("Error saving VehicleConfig to Redis:", err)
 		return err
 	}

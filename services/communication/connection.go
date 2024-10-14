@@ -10,6 +10,7 @@ import (
 	"time"
 
 	api "github.com/ReCoFIIT/integration-api"
+	"github.com/getsentry/sentry-go"
 )
 
 type IConnection interface {
@@ -56,6 +57,7 @@ func NewIntegrationModuleConnection(addr *net.UDPAddr) *IntegrationModuleConnect
 	connection.UDPConn, err = net.DialUDP("udp", nil, connection.ServerAddress)
 
 	if err != nil {
+		sentry.CaptureException(err)
 		fmt.Printf("Error initializing UDP connection: %v\n", err)
 		return nil
 	}
@@ -72,6 +74,7 @@ func (connection *IntegrationModuleConnection) Establish() {
 			data := readBuffer[:readBufferLength]
 
 			if err != nil {
+				sentry.CaptureException(err)
 				fmt.Printf("Error reading message %v\n", err)
 				continue
 			}
@@ -98,6 +101,7 @@ func (connection *IntegrationModuleConnection) WriteDatagram(datagram api.IDatag
 
 	data, err := json.Marshal(datagram)
 	if err != nil {
+		sentry.CaptureException(err)
 		fmt.Printf("Error writing diagram %v\n", err)
 	}
 	_, _ = connection.UDPConn.Write(data)
@@ -114,6 +118,7 @@ func (connection *IntegrationModuleConnection) ProcessDatagram(data []byte, safe
 	var datagram api.BaseDatagram
 	err := json.Unmarshal(data, &datagram)
 	if err != nil {
+		sentry.CaptureException(err)
 		fmt.Print("Parsing JSON failed: ", err)
 		return
 	}

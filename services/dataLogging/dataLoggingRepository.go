@@ -8,6 +8,7 @@ import (
 	"time"
 
 	api "github.com/ReCoFIIT/integration-api"
+	"github.com/getsentry/sentry-go"
 )
 
 func LogData(datagram api.UpdateVehicleDatagram) {
@@ -135,6 +136,7 @@ func LogData(datagram api.UpdateVehicleDatagram) {
 
 		err := redis.SaveVehicleConfig(vehicleConfigKey, vehicleConfig)
 		if err != nil {
+			sentry.CaptureException(err)
 			return
 		}
 	}
@@ -165,6 +167,7 @@ func SaveMeasurement(measurementController MeasurementController, carSessionID u
 	measurement := models.Measurement{CarSessionID: carSessionID, CreatedAt: &time.Time{}, SensorID: *sensorID, Data1: data1, Data2: data2Value}
 	err := measurementController.InsertMeasurement(measurement)
 	if err != nil {
+		sentry.CaptureException(err)
 		return
 	}
 }

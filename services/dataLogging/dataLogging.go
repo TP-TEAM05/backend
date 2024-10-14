@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"recofiit/models"
 	"recofiit/services/database"
+
+	"github.com/getsentry/sentry-go"
 )
 
 func populateControllers() {
@@ -85,6 +87,7 @@ func populateSensors() {
 
 	id, err := getRandomControllerInstanceID()
 	if err != nil {
+		sentry.CaptureException(err)
 		// Handle error (log, return, etc.)
 		fmt.Println("Error getting ControllerInstanceID:", err)
 		return
