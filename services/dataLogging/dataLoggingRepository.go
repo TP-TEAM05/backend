@@ -150,6 +150,9 @@ func LogData(datagram api.UpdateVehicleDatagram) {
 	SaveMeasurement(*measurementController, vehicleConfig.CarSession.ID, vehicleConfig.Sensors, "SPEED_FRONT_RIGHT", datagram.Vehicle.SpeedFrontRight, nil)
 	SaveMeasurement(*measurementController, vehicleConfig.CarSession.ID, vehicleConfig.Sensors, "SPEED_REAR_LEFT", datagram.Vehicle.SpeedRearLeft, nil)
 	SaveMeasurement(*measurementController, vehicleConfig.CarSession.ID, vehicleConfig.Sensors, "SPEED_REAR_RIGHT", datagram.Vehicle.SpeedRearRight, nil)
+	SaveMeasurement(*measurementController, vehicleConfig.CarSession.ID, vehicleConfig.Sensors, "VOLTAGE0", datagram.Vehicle.Voltage0, nil)
+	SaveMeasurement(*measurementController, vehicleConfig.CarSession.ID, vehicleConfig.Sensors, "VOLTAGE1", datagram.Vehicle.Voltage1, nil)
+	SaveMeasurement(*measurementController, vehicleConfig.CarSession.ID, vehicleConfig.Sensors, "VOLTAGE2", datagram.Vehicle.Voltage2, nil)
 }
 
 func SaveMeasurement(measurementController MeasurementController, carSessionID uint, sensors []models.Sensor, sensorType models.SensorType, data1 float32, data2 *float32) {
