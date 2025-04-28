@@ -19,7 +19,9 @@ func LogData(datagram api.UpdateVehicleDatagram) {
 	result := db.Where("started_at is not null").Where("ended_at is null").First(&session)
 
 	if result.Error != nil {
-		panic("Failed to find started session")
+		// Session not found
+		sentry.CaptureMessage("Session not found for vehicle: " + datagram.Vehicle.Vin)
+		return
 	}
 
 	var vehicleConfigKey = datagram.Vehicle.Vin + "-session-" + strconv.Itoa(int(session.ID))
@@ -167,7 +169,8 @@ func SaveMeasurement(measurementController MeasurementController, carSessionID u
 		data2Value = *data2
 	}
 
-	measurement := models.Measurement{CarSessionID: carSessionID, CreatedAt: &time.Time{}, SensorID: *sensorID, Data1: data1, Data2: data2Value}
+	currentTime := time.Now()
+	measurement := models.Measurement{CarSessionID: carSessionID, CreatedAt: &currentTime, SensorID: *sensorID, Data1: data1, Data2: data2Value}
 	err := measurementController.InsertMeasurement(measurement)
 	if err != nil {
 		sentry.CaptureException(err)

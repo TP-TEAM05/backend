@@ -1,13 +1,15 @@
 package ws_session_namespace
 
 import (
-	api "github.com/ReCoFIIT/integration-api"
 	"recofiit/models"
 	"recofiit/services/database"
 	"recofiit/services/redis"
 	"recofiit/services/statistics"
 	wsservice "recofiit/services/wsService"
 	"strconv"
+
+	api "github.com/ReCoFIIT/integration-api"
+	"github.com/getsentry/sentry-go"
 )
 
 type ExtendedUpdateVehicleDatagram struct {
@@ -23,7 +25,9 @@ func (w WsSessionController) SendLiveSessionData(data *api.UpdateVehicleDatagram
 	result := db.Where("started_at is not null").Where("ended_at is null").First(&session)
 
 	if result.Error != nil {
-		panic("Failed to find started session")
+		// Session not found
+		sentry.CaptureMessage("Session not found, live data cannot be send for vehicle: " + data.Vehicle.Vin)
+		return
 	}
 
 	var dataExtended = &ExtendedUpdateVehicleDatagram{

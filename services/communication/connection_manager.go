@@ -23,7 +23,7 @@ func sendKeepAlives(connection *IntegrationModuleConnection, interval float32) {
 
 		acknowledged := connection.WriteAcknowledgedDatagram(datagram, 3, true)
 		if !acknowledged {
-			fmt.Printf("Could not connect to %v\n", connection.ServerAddress)
+			fmt.Printf("Did not received ACK from: %v\n", connection.ServerAddress)
 			continue
 		}
 
@@ -48,9 +48,7 @@ func maintainSubscription(connection *IntegrationModuleConnection, subscriptionC
 		panic("Connection cannot be nil")
 	}
 
-	var datagram api.IDatagram
-
-	datagram = &api.SubscribeDatagram{
+	var datagram api.IDatagram = &api.SubscribeDatagram{
 		BaseDatagram: api.BaseDatagram{
 			Type: "subscribe",
 		},

@@ -90,6 +90,21 @@ func (w WsSensorController) Create(req []byte) wsservice.WsResponse[interface{}]
 	var ctrl models.Controller
 	db.First(&ctrl, Req.Body.ControllerID)
 
+	// Check if a sensor with the same type already exists for this controller
+	var existingSensors []models.Sensor
+	db.Joins("JOIN controller_instances ON sensors.controller_instance_id = controller_instances.id").
+		Where("controller_instances.controller_id = ? AND controller_instances.deleted_at IS NULL AND sensors.sensor_type = ?",
+			ctrl.ID, Req.Body.Type).
+		Find(&existingSensors)
+
+	if len(existingSensors) > 0 {
+		return wsservice.WsResponse[interface{}]{
+			Namespace: "sensor",
+			Endpoint:  "create",
+			Error:     "A sensor with this type already exists for this controller",
+		}
+	}
+
 	// refresh ControllerInstance
 	var ci models.ControllerInstance
 	db.Where("controller_id = ?", ctrl.ID).Where("deleted_at is null").First(&ci)
