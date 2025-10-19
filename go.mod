@@ -9,12 +9,14 @@ require (
 	github.com/joho/godotenv v1.5.1
 )
 
-require github.com/redis/go-redis/v9 v9.3.0
+require (
+	github.com/getsentry/sentry-go v0.29.0
+	github.com/redis/go-redis/v9 v9.3.0
+)
 
 require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
-	github.com/getsentry/sentry-go v0.29.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
@@ -25,7 +27,7 @@ require (
 )
 
 require (
-	github.com/TP-TEAM05/integration-api v1.2.2
+	github.com/TP-TEAM05/integration-api v1.2.3
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
