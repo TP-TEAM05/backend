@@ -8,7 +8,7 @@ import (
 	wsservice "recofiit/services/wsService"
 	"strconv"
 
-	api "github.com/ReCoFIIT/integration-api"
+	api "github.com/TP-TEAM05/integration-api"
 	"github.com/getsentry/sentry-go"
 )
 

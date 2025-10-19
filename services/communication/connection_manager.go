@@ -5,7 +5,7 @@ import (
 	_ "net/http/pprof"
 	"time"
 
-	api "github.com/ReCoFIIT/integration-api"
+	api "github.com/TP-TEAM05/integration-api"
 	"github.com/getsentry/sentry-go"
 	"github.com/jftuga/geodist"
 	_ "github.com/joho/godotenv/autoload"
