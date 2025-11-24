@@ -124,9 +124,9 @@ func populateCars() {
 }
 
 func Init() {
-	// populateControllers()
-	// populateFirmwares()
-	// populateControllerInstances()
-	// populateSensors()
-	// populateCars()
+	populateControllers()
+	populateFirmwares()
+	populateControllerInstances()
+	populateSensors()
+	populateCars()
 }
