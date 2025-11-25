@@ -79,7 +79,15 @@ func LogData(datagram api.UpdateVehicleDatagram) {
 				db.Create(&controller)
 
 				var firmware models.Firmware
-				db.Last(&firmware)
+				result := db.Last(&firmware)
+				if result.Error != nil {
+					// No firmware exists, create a default one
+					firmware = models.Firmware{
+						Version:     "Default 1.0",
+						Description: "Auto-created default firmware",
+					}
+					db.Create(&firmware)
+				}
 
 				controllerInstance = models.ControllerInstance{
 					FirmwareID:   firmware.ID,
