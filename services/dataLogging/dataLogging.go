@@ -124,9 +124,17 @@ func populateCars() {
 }
 
 func Init() {
-	// populateControllers()
-	// populateFirmwares()
-	// populateControllerInstances()
-	// populateSensors()
-	// populateCars()
+	// Check if we need to populate initial data
+	var count int64
+	database.GetDB().Model(&models.Firmware{}).Count(&count)
+	if count == 0 {
+		// Database is empty, populate initial seed data
+		fmt.Println("Populating initial seed data...")
+		populateFirmwares()
+		populateControllers()
+		populateControllerInstances()
+		populateSensors()
+		populateCars()
+		fmt.Println("Seed data population complete.")
+	}
 }
