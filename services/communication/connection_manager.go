@@ -21,7 +21,9 @@ func sendKeepAlives(connection *IntegrationModuleConnection, interval float32) {
 			BaseDatagram: api.BaseDatagram{Type: "connect"},
 		}
 
+		fmt.Printf("[BACKEND-TX-CONNECT] Sending connect to %v (index: %d)\n", connection.ServerAddress, connection.NextSendIndex)
 		acknowledged := connection.WriteAcknowledgedDatagram(datagram, 3, true)
+		fmt.Printf("[BACKEND-TX-CONNECT-RESULT] ACK received: %v (for index: %d)\n", acknowledged, datagram.GetIndex())
 		if !acknowledged {
 			fmt.Printf("Did not received ACK from: %v\n", connection.ServerAddress)
 			continue
@@ -34,7 +36,9 @@ func sendKeepAlives(connection *IntegrationModuleConnection, interval float32) {
 				BaseDatagram: api.BaseDatagram{Type: "keepalive"},
 			}
 
+			fmt.Printf("[BACKEND-TX-KEEPALIVE] Sending keepalive to %v\n", connection.ServerAddress)
 			acknowledged = connection.WriteAcknowledgedDatagram(datagram, 3, true)
+			fmt.Printf("[BACKEND-KEEPALIVE-RESULT] ACK received: %v\n", acknowledged)
 			if !acknowledged {
 				fmt.Printf("Could not send keep-alive to %v\n", connection.ServerAddress)
 				break
@@ -68,6 +72,13 @@ func maintainSubscription(connection *IntegrationModuleConnection, subscriptionC
 		time.Sleep(time.Second * time.Duration(subscriptionInterval*2))
 
 		// Check subscription is active
+		// Note: For live-updates subscriptions, health checking is disabled
+		// because packets flow continuously and are already logged with [BACKEND-RX]
+		if subscriptionContent == "live-updates" {
+			// Keep subscription active indefinitely for live updates
+			select {}
+		}
+
 		for range time.Tick(time.Second * time.Duration(checkInterval)) {
 
 			var lastDatagram api.IDatagram

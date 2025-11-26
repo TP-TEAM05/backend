@@ -122,6 +122,11 @@ func (connection *IntegrationModuleConnection) ProcessDatagram(data []byte, safe
 		fmt.Print("Parsing JSON failed: ", err)
 		return
 	}
+
+	// DEBUG: Log all received datagram types
+	if datagram.Type != "update_vehicle_position" {
+		fmt.Printf("[BACKEND-RX-ALL] Received %s datagram (index: %d)\n", datagram.Type, datagram.Index)
+	}
 	// TODO uncomment this
 	//if datagram.Index <= connection.LastReceivedIndex {
 	//	return
@@ -134,13 +139,20 @@ func (connection *IntegrationModuleConnection) ProcessDatagram(data []byte, safe
 		var acknowledgeDatagram api.AcknowledgeDatagram
 		_ = json.Unmarshal(data, &acknowledgeDatagram)
 
+		fmt.Printf("[BACKEND-RX-ACK] Received ACK for index: %d\n", acknowledgeDatagram.AcknowledgingIndex)
+
 		// Check if anyone is waiting for this
 		channel, ok := connection.AcknowledgeWaiters[acknowledgeDatagram.AcknowledgingIndex]
 		if ok {
+			fmt.Printf("[BACKEND-ACK-MATCHED] Found waiter for index: %d\n", acknowledgeDatagram.AcknowledgingIndex)
 			select {
 			case channel <- true:
+				fmt.Printf("[BACKEND-ACK-SENT] Notified waiter for index: %d\n", acknowledgeDatagram.AcknowledgingIndex)
 			default:
+				fmt.Printf("[BACKEND-ACK-FAILED] Could not notify waiter for index: %d\n", acknowledgeDatagram.AcknowledgingIndex)
 			}
+		} else {
+			fmt.Printf("[BACKEND-ACK-NO-WAITER] No waiter found for index: %d\n", acknowledgeDatagram.AcknowledgingIndex)
 		}
 
 	case "update_vehicles":
@@ -165,6 +177,11 @@ func (connection *IntegrationModuleConnection) ProcessDatagram(data []byte, safe
 		// live updates served directly to a database
 		var updateVehiclesDatagram api.UpdateVehicleDatagram
 		_ = json.Unmarshal(data, &updateVehiclesDatagram)
+
+		// DEBUG: Log received packet
+		fmt.Printf("[BACKEND-RX] Received update_vehicle_position for VIN: %s (index: %d)\n",
+			updateVehiclesDatagram.Vehicle.Vin, datagram.Index)
+
 		dataLogging.LogData(updateVehiclesDatagram)
 		// Send processed data to FE
 		controller := ws_session_namespace.WsSessionController{}
@@ -217,7 +234,7 @@ func (connection *IntegrationModuleConnection) WriteAcknowledgedDatagram(datagra
 
 		select {
 		case acknowledged = <-acknowledgeWaiterChannel:
-		case <-time.After(2 * time.Second): // TODO constant
+		case <-time.After(5 * time.Second): // Increased from 2s to 5s due to network latency
 		}
 
 		// Cleanup waiter channel
