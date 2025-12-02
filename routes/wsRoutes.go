@@ -4,6 +4,7 @@ import (
 	ws_car_namespace "recofiit/controllers/ws/Car"
 	ws_controller_namespace "recofiit/controllers/ws/Controller"
 	ws_firmware_namespace "recofiit/controllers/ws/Firmware"
+	ws_manual_control_namespace "recofiit/controllers/ws/ManualControl"
 	ws_sensor_namespace "recofiit/controllers/ws/Sensor"
 	ws_session_namespace "recofiit/controllers/ws/Session"
 	wsservice "recofiit/services/wsService"
@@ -14,6 +15,7 @@ func SetupWs(m *wsservice.ClientManager) {
 	CarController := ws_car_namespace.WsCarController{}
 	ControllerController := ws_controller_namespace.WsControllerController{}
 	FirmwareController := ws_firmware_namespace.WsFirmwareController{}
+	ManualControlController := ws_manual_control_namespace.WsManualControlController{}
 	SensorController := ws_sensor_namespace.WsSensorController{}
 	SessionController := ws_session_namespace.WsSessionController{}
 	r := m.Router
@@ -54,4 +56,7 @@ func SetupWs(m *wsservice.ClientManager) {
 	r.Register("session", "end", SessionController.End)
 	r.Register("session", "delete", SessionController.Delete)
 	r.Register("session", "measurements", SessionController.GetMeasurements)
+
+	// Manual control routes
+	r.Register("manual_control", "send_command", ManualControlController.SendControlCommand)
 }

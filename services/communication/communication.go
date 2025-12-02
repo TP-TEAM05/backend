@@ -54,6 +54,9 @@ func subscribe() {
 	connection := NewIntegrationModuleConnection(&serverAddress)
 	connection.Establish()
 
+	// Set the global connection for manual control
+	SetCarIntegrationConnection(connection)
+
 	// Send keep-alives and check whether subscription is active periodically
 	go sendKeepAlives(connection, 10)
 

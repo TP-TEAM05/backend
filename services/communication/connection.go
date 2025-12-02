@@ -13,6 +13,19 @@ import (
 	"github.com/getsentry/sentry-go"
 )
 
+// Global connection instance for manual control
+var carIntegrationConnection *IntegrationModuleConnection
+
+// GetCarIntegrationConnection returns the global car-integration connection
+func GetCarIntegrationConnection() *IntegrationModuleConnection {
+	return carIntegrationConnection
+}
+
+// SetCarIntegrationConnection sets the global car-integration connection
+func SetCarIntegrationConnection(conn *IntegrationModuleConnection) {
+	carIntegrationConnection = conn
+}
+
 type IConnection interface {
 	Establish()
 	ProcessDatagram(data []byte)
