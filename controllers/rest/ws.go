@@ -36,7 +36,7 @@ func WsHandler(c *gin.Context) {
 
 	fmt.Println("Clients:", clients)
 
-	client := &wsservice.Client{ID: uuid.Must(uuid.NewV4(), nil).String(), Socket: conn, Send: make(chan []byte)}
+	client := &wsservice.Client{ID: uuid.Must(uuid.NewV4(), nil).String(), Socket: conn, Send: make(chan []byte, 1024)}
 
 	manager.Register <- client
 

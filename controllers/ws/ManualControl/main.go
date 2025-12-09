@@ -21,8 +21,14 @@ func (w WsManualControlController) SendControlCommand(req []byte) wsservice.WsRe
 		Speed     float32 `json:"speed"`     // -1 to 1 (reverse to forward)
 	}
 
+	// var Req wsservice.WsRequestPrepared[Body]
+	// Req.Parse(req)
 	var Req wsservice.WsRequestPrepared[Body]
-	Req.Parse(req)
+	if err := json.Unmarshal(req, &Req); err != nil {
+		fmt.Println("[ManualControl] Failed to parse WebSocket request:", err)
+	}
+
+	fmt.Println("[DEBUG] Parsed request:", Req.Body)
 
 	// Format the control message for the ROS2 nodes
 	// The message will be passed through car-integration to the vehicle's UDP listener

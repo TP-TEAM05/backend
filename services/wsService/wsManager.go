@@ -15,7 +15,7 @@ type Client struct {
 	//Connected socket
 	Socket *websocket.Conn
 	//Message
-	Send chan []byte
+	Send chan []byte // keep type
 }
 
 type ClientManager struct {
